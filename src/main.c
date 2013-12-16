@@ -6,6 +6,8 @@
 #include "mongoose.h"
 
 /* own functions */
+#include "parse.h"
+#include "i2c.h"
 #include "i2c_io.h"
 #include "pcf8574.h"
 
@@ -14,8 +16,10 @@ static int begin_request_handler(struct mg_connection *conn) {
   const struct mg_request_info *request_info = mg_get_request_info(conn);
   char content[1024];
 
+#if 0
   char* rest;
   char* token = NULL;
+#endif
 
   // Prepare the message we're going to send
   int content_length = snprintf(content, sizeof(content),
@@ -32,12 +36,14 @@ static int begin_request_handler(struct mg_connection *conn) {
 
 
 
+#if 0
   token = strtok_r(request_info->uri, "/", &rest);
   while (token != NULL)
   {
       printf("URI part: %s\n", token);
       token = strtok_r(NULL, "/", &rest);
   }
+#endif
 
   // Send HTTP reply to the client
   mg_printf(conn,
@@ -60,6 +66,16 @@ int main(void) {
   // List of options. Last element must be NULL.
   const char *options[] = {"listening_ports", "8080", NULL};
 
+  i2c_config lConfig;
+
+  parse_config("../config/io_ext.ini", &lConfig);
+
+  lConfig.busses[0].devices[0].drv_handle->write(0x38, 0xFF);
+  printf("Address: 0x%02X\n", lConfig.busses[0].devices[0].address);
+  printf("Number of busses: %d\n", lConfig.num_busses);
+
+  i2c_init_fhs(&lConfig);
+
   // Prepare callbacks structure. We have only one callback, the rest are NULL.
   memset(&callbacks, 0, sizeof(callbacks));
   callbacks.begin_request = begin_request_handler;
@@ -73,6 +89,8 @@ int main(void) {
 
   // Stop the server.
   mg_stop(ctx);
+
+  i2c_close_fhs(&lConfig);
 
   return 0;
 }
