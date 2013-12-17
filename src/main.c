@@ -9,7 +9,6 @@
 #include "parse.h"
 #include "i2c.h"
 #include "i2c_io.h"
-#include "pcf8574.h"
 
 // This function will be called by mongoose on every new request.
 static int begin_request_handler(struct mg_connection *conn) {
