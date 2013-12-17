@@ -65,15 +65,15 @@ int main(void) {
   // List of options. Last element must be NULL.
   const char *options[] = {"listening_ports", "8080", NULL};
 
-  i2c_config lConfig;
+  i2c_config i2c_bus_config;
 
-  parse_config("../config/io_ext.ini", &lConfig);
+  parse_config("../config/io_ext.ini", &i2c_bus_config);
 
-  lConfig.busses[0].devices[0].drv_handle->write(0x38, 0xFF);
-  printf("Address: 0x%02X\n", lConfig.busses[0].devices[0].address);
-  printf("Number of busses: %d\n", lConfig.num_busses);
+  i2c_bus_config.busses[0].devices[0].drv_handle->write(0x38, 0xFF);
+  printf("Address: 0x%02X\n", i2c_bus_config.busses[0].devices[0].address);
+  printf("Number of busses: %d\n", i2c_bus_config.num_busses);
 
-  i2c_init_fhs(&lConfig);
+  i2c_init_fhs(&i2c_bus_config);
 
   // Prepare callbacks structure. We have only one callback, the rest are NULL.
   memset(&callbacks, 0, sizeof(callbacks));
@@ -89,7 +89,7 @@ int main(void) {
   // Stop the server.
   mg_stop(ctx);
 
-  i2c_close_fhs(&lConfig);
+  i2c_close_fhs(&i2c_bus_config);
 
   return 0;
 }
