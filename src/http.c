@@ -1,5 +1,8 @@
 /* standard includes */
 #include <string.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <limits.h>
 
 /* 3rd party libraries */
 
@@ -12,7 +15,7 @@
 
 typedef enum
 {
-    REQUEST_NONE,
+    REQUEST_ERR,
     REQUEST_GET,
     REQUEST_SET,
 } request_type;
@@ -23,6 +26,13 @@ typedef struct
     unsigned idx_dev;
     unsigned value;
 } uri_parts;
+
+typedef enum
+{
+    STAGE_BUS = 0,
+    STAGE_DEV,
+    STAGE_VALUE
+} uri_stages;
 
 static int begin_request_handler(struct mg_connection *conn);
 
@@ -48,42 +58,55 @@ int stop_http_server(struct mg_context* context)
 
 static request_type parse_uri(const char* uri, uri_parts* parts)
 {
-    request_type result = REQUEST_NONE;
+    request_type result = REQUEST_ERR;
 
     char buf_uri[STRTOK_BUF_SIZE];
 
     char* rest;
     char* token = NULL;
-    unsigned cnt = 0;
+    unsigned cnt_stage = 0;
+    long number = 0;
+    char* endptr = NULL;
+    int base = 10;
 
-    /* tbd create copy of uri */
-
+    /* circumvent const => unconst cast */
     strncpy(buf_uri, uri, STRTOK_BUF_SIZE);
-    token = strtok_r(buf_uri, URI_DELIM, &rest);
-    while (cnt < 3 && token != NULL)
-    {
-        printf("URI part: %s\n", token);
-        token = strtok_r(NULL, URI_DELIM, &rest);
 
-        switch(cnt)
+    token = strtok_r(buf_uri, URI_DELIM, &rest);
+    while (cnt_stage <= STAGE_VALUE && token != NULL)
+    {
+        base = (cnt_stage == STAGE_VALUE ? 16 : 10);
+
+        endptr = NULL;
+        number = strtol(token, &endptr, base);
+
+        if ((errno == ERANGE && (number == LONG_MAX || number == LONG_MIN))
+                || endptr == token)
         {
-            case 0:
-                /* bus index */
+            return REQUEST_ERR;
+        }
+
+        /* assign parsed number to current stage's counterpart in data structure */
+        switch(cnt_stage)
+        {
+            case STAGE_BUS:
+                parts->idx_bus = number;
                 break;
-            case 1:
-                /* device index */
+            case STAGE_DEV:
+                parts->idx_dev = number;
                 result = REQUEST_GET;
                 break;
-            case 2:
-                /* value */
+            case STAGE_VALUE:
+                parts->value = number;
                 result = REQUEST_SET;
                 break;
             default:
-                /* illegal value */
-                result = REQUEST_NONE;
+                /* illegal stage */
+                result = REQUEST_ERR;
                 break;
         }
-        ++cnt;
+        ++cnt_stage;
+        token = strtok_r(NULL, URI_DELIM, &rest);
     }
 
     return result;
@@ -96,6 +119,7 @@ static int begin_request_handler(struct mg_connection *conn)
     char content[1024];
 
     uri_parts parts;
+    request_type type = REQUEST_ERR;
 
     // Prepare the message we're going to send
     int content_length = snprintf(content, sizeof(content),
@@ -110,9 +134,20 @@ static int begin_request_handler(struct mg_connection *conn)
             request_info->query_string,
             request_info->uri);
 
+    type = parse_uri(request_info->uri, &parts);
 
+#if 0
+    if (REQUEST_ERR != type)
+    {
+        fprintf(stderr, "Bus: %d, Device: %d", parts.idx_bus, parts.idx_dev);
+        if (REQUEST_SET == type)
+        {
+            fprintf(stderr, ", Value: 0x%02X", parts.value);
+        }
+        fprintf(stderr, "\n");
+    }
+#endif
 
-    parse_uri(request_info->uri, &parts);
     // Send HTTP reply to the client
     mg_printf(conn,
             "HTTP/1.1 200 OK\r\n"
