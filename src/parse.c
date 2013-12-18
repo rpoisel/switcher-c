@@ -69,7 +69,7 @@ static int process_entries(i2c_bus* current_bus, i2c_io* current_io, const char*
 }
 
 static int parser_handler(void* user, const char* section, const char* name,
-                   const char* value)
+        const char* value)
 {
     bus_configs* user_data = (bus_configs*)user;
 
