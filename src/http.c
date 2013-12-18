@@ -87,7 +87,7 @@ static request_type parse_uri(const char* uri, uri_parts* parts)
         }
 
         /* assign parsed number to current stage's counterpart in data structure */
-        switch(cnt_stage)
+        switch (cnt_stage)
         {
             case STAGE_BUS:
                 parts->idx_bus = number;
@@ -138,7 +138,7 @@ static int begin_request_handler(struct mg_connection *conn)
 
 #if 1
     fprintf(stderr, "URI: %s, ", request_info->uri);
-    switch(type)
+    switch (type)
     {
         case REQUEST_GET:
             fprintf(stderr, "Request: GET, ");
