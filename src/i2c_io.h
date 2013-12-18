@@ -5,6 +5,8 @@
 
 #define MAX_I2C_BUSSES 8
 #define MAX_IO_DEVICES 128
+
+/* for example: /dev/i2c-2 */
 #define MAX_DEV_FILE_LEN 32
 
 typedef struct
