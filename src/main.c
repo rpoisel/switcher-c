@@ -11,7 +11,8 @@
 #include "i2c_io.h"
 
 // This function will be called by mongoose on every new request.
-static int begin_request_handler(struct mg_connection *conn) {
+static int begin_request_handler(struct mg_connection *conn) 
+{
   const struct mg_request_info *request_info = mg_get_request_info(conn);
   char content[1024];
 
@@ -58,7 +59,8 @@ static int begin_request_handler(struct mg_connection *conn) {
   return 1;
 }
 
-int main(void) {
+int main(void) 
+{
   struct mg_context *ctx;
   struct mg_callbacks callbacks;
 
@@ -68,6 +70,7 @@ int main(void) {
   i2c_config i2c_bus_config;
 
   parse_config("../config/io_ext.ini", &i2c_bus_config);
+  validate_config(&i2c_bus_config);
 
   i2c_bus_config.busses[0].devices[0].drv_handle->write(0x38, 0xFF);
   printf("Address: 0x%02X\n", i2c_bus_config.busses[0].devices[0].address);
