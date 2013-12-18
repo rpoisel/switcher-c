@@ -2,6 +2,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #include "i2c_io.h"
 
@@ -15,11 +16,11 @@ int i2c_init_fhs(i2c_config* config)
         current_bus->fh = open(current_bus->dev_file, O_RDWR);
         if (current_bus->fh == -1)
         {
-            return -1; /* failure */
+            return EXIT_FAILURE;
         }
     }
 
-    return 0; /* success */
+    return EXIT_SUCCESS;
 }
 
 int i2c_close_fhs(i2c_config* config)
@@ -31,9 +32,9 @@ int i2c_close_fhs(i2c_config* config)
         i2c_bus* current_bus = config->busses + cnt;
         if (close(current_bus->fh) == -1)
         {
-            return -1; /* failure */
+            return EXIT_FAILURE;
         }
     }
 
-    return 0; /* success */
+    return EXIT_SUCCESS;
 }

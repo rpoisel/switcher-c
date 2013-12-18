@@ -53,7 +53,7 @@ int stop_http_server(struct mg_context* context)
     // Stop the server.
     mg_stop(context);
 
-    return 0; /* success */
+    return EXIT_SUCCESS;
 }
 
 static request_type parse_uri(const char* uri, uri_parts* parts)

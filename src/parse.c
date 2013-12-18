@@ -65,9 +65,12 @@ static int process_entries(i2c_bus* current_bus, i2c_io* current_io, const char*
         return 0; /* unknown entry */
     }
 
-    return 1;
+    return 1; /* success (as defined by inih) */
 }
 
+/**
+ * invoked by inih
+ */
 static int parser_handler(void* user, const char* section, const char* name,
         const char* value)
 {
