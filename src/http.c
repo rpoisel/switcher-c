@@ -136,7 +136,20 @@ static int begin_request_handler(struct mg_connection *conn)
 
     type = parse_uri(request_info->uri, &parts);
 
-#if 0
+#if 1
+    fprintf(stderr, "URI: %s, ", request_info->uri);
+    switch(type)
+    {
+        case REQUEST_GET:
+            fprintf(stderr, "Request: GET, ");
+            break;
+        case REQUEST_SET:
+            fprintf(stderr, "Request: SET, ");
+            break;
+        default:
+            fprintf(stderr, "Request: ERR");
+            break;
+    }
     if (REQUEST_ERR != type)
     {
         fprintf(stderr, "Bus: %d, Device: %d", parts.idx_bus, parts.idx_dev);
@@ -144,8 +157,8 @@ static int begin_request_handler(struct mg_connection *conn)
         {
             fprintf(stderr, ", Value: 0x%02X", parts.value);
         }
-        fprintf(stderr, "\n");
     }
+    fprintf(stderr, "\n");
 #endif
 
     // Send HTTP reply to the client

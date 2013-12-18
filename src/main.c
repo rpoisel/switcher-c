@@ -32,7 +32,7 @@ int main(void)
     parse_config("../config/io_ext.ini", &i2c_bus_config);
     validate_config(&i2c_bus_config);
 
-#if 1
+#if 0
     /* test parsing functionality */
     i2c_bus_config.busses[0].devices[0].drv_handle->write(0x38, 0xFF);
     printf("Address: 0x%02X\n", i2c_bus_config.busses[0].devices[0].address);
