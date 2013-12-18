@@ -103,7 +103,7 @@ int parse_config(const char* filename, i2c_config* config)
     };
     if (ini_parse(filename, &parser_handler, &user_data) < 0) {
         fprintf(stderr, "Can't load '%s'\n", filename);
-        return 1;
+        return EXIT_FAILURE;
     }
 
     return 0;

@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <signal.h>
+#include <unistd.h>
 
 /* included libraries */
 
@@ -12,14 +13,18 @@
 #include "i2c.h"
 #include "i2c_io.h"
 
+#define STR_PATH_LEN 256
+#define DEFAULT_CONFIG_PATH "../config/io_ext.ini"
+
 static struct mg_context* http_context = NULL;
 static i2c_config i2c_bus_config;
 
 static void signal_handler(int sig);
 
-int main(void) 
+int main(int argc, char* argv[]) 
 {
-    // List of options. Last element must be NULL.
+    int option = -1;
+    char config_path[STR_PATH_LEN];
     const char *http_options[] = {"listening_ports", "8080", NULL};
 
     if (signal(SIGINT, signal_handler) == SIG_ERR || 
@@ -29,7 +34,24 @@ int main(void)
         return 1;
     }
 
-    parse_config("../config/io_ext.ini", &i2c_bus_config);
+    strncpy(config_path, DEFAULT_CONFIG_PATH, STR_PATH_LEN);
+    while ((option = getopt(argc, argv, "hc:")) != -1)
+    {
+        switch (option)
+        {
+            case 'c':
+                strncpy(config_path, optarg, STR_PATH_LEN);
+                break;
+            default:
+                fprintf(stderr, "Usage: %s [-h] [-c config-file]\n", argv[0]);
+                exit(EXIT_FAILURE);
+        }
+    }
+
+    if (parse_config(config_path, &i2c_bus_config) == EXIT_FAILURE)
+    {
+        exit(EXIT_FAILURE);
+    }
     validate_config(&i2c_bus_config);
 
 #if 0
