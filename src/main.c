@@ -1,98 +1,71 @@
 /* standard headers */
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <signal.h>
 
 /* included libraries */
-#include "mongoose.h"
 
 /* own functions */
 #include "parse.h"
+#include "http.h"
 #include "i2c.h"
 #include "i2c_io.h"
 
-// This function will be called by mongoose on every new request.
-static int begin_request_handler(struct mg_connection *conn) 
-{
-  const struct mg_request_info *request_info = mg_get_request_info(conn);
-  char content[1024];
+static struct mg_context* http_context = NULL;
+static i2c_config i2c_bus_config;
 
-#if 0
-  char* rest;
-  char* token = NULL;
-#endif
-
-  // Prepare the message we're going to send
-  int content_length = snprintf(content, sizeof(content),
-                                "{"
-                                    "\"msg\": \"%s\","
-                                    "\"remotePort\": %d,"
-                                    "\"queryString\": \"%s\","
-                                    "\"uri\": \"%s\""
-                                "}",
-                                "Hello from mongoose!",
-                                request_info->remote_port,
-                                request_info->query_string,
-                                request_info->uri);
-
-
-
-#if 0
-  token = strtok_r(request_info->uri, "/", &rest);
-  while (token != NULL)
-  {
-      printf("URI part: %s\n", token);
-      token = strtok_r(NULL, "/", &rest);
-  }
-#endif
-
-  // Send HTTP reply to the client
-  mg_printf(conn,
-            "HTTP/1.1 200 OK\r\n"
-            "Content-Type: text/plain\r\n"
-            "Content-Length: %d\r\n"        // Always set Content-Length
-            "\r\n"
-            "%s",
-            content_length, content);
-
-  // Returning non-zero tells mongoose that our function has replied to
-  // the client, and mongoose should not send client any more data.
-  return 1;
-}
+static void sigIntHandler(int sig);
 
 int main(void) 
 {
-  struct mg_context *ctx;
-  struct mg_callbacks callbacks;
-
   // List of options. Last element must be NULL.
-  const char *options[] = {"listening_ports", "8080", NULL};
+  const char *http_options[] = {"listening_ports", "8080", NULL};
 
-  i2c_config i2c_bus_config;
+  if (signal(SIGINT, sigIntHandler) == SIG_ERR)
+  {
+      fprintf(stderr, "Could not install signal handler for SIGINT.\n");
+      return 1;
+  }
 
   parse_config("../config/io_ext.ini", &i2c_bus_config);
   validate_config(&i2c_bus_config);
 
+#if 1
+  /* test parsing functionality */
   i2c_bus_config.busses[0].devices[0].drv_handle->write(0x38, 0xFF);
   printf("Address: 0x%02X\n", i2c_bus_config.busses[0].devices[0].address);
   printf("Number of busses: %d\n", i2c_bus_config.num_busses);
+#endif
 
   i2c_init_fhs(&i2c_bus_config);
 
-  // Prepare callbacks structure. We have only one callback, the rest are NULL.
-  memset(&callbacks, 0, sizeof(callbacks));
-  callbacks.begin_request = begin_request_handler;
+  http_context = start_http_server(http_options, &i2c_bus_config);
 
-  // Start the web server.
-  ctx = mg_start(&callbacks, NULL, options);
-
-  // Wait until user hits "enter". Server is running in separate thread.
-  // Navigating to http://localhost:8080 will invoke begin_request_handler().
-  getchar();
-
-  // Stop the server.
-  mg_stop(ctx);
-
-  i2c_close_fhs(&i2c_bus_config);
+  while (1)
+  {
+      getchar();
+  }
 
   return 0;
+}
+
+static void sigIntHandler(int sig)
+{
+    int ret = 0;
+
+    if (NULL != http_context)
+    {
+        fprintf(stderr, "Shutting down HTTP server ...");
+        fflush(stderr);
+        stop_http_server(http_context);
+        fprintf(stderr, "done.\n");
+
+        fprintf(stderr, "Closing I2C filehandles ...");
+        fflush(stderr);
+        i2c_close_fhs(&i2c_bus_config);
+        fprintf(stderr, "done.\n");
+    }
+
+    exit(ret);
 }
