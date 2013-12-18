@@ -93,16 +93,16 @@ int validate_config(i2c_config* i2c_bus_config)
     return 1; /* error (not implemented)*/
 }
 
-int parse_config(const char* pFilename, i2c_config* pConfig)
+int parse_config(const char* filename, i2c_config* config)
 {
     bus_configs user_data = {
         .last_section[0] = '\0',
-        .config = pConfig,
+        .config = config,
         .current_bus_id = -1,
         .current_dev_id = -1
     };
-    if (ini_parse(pFilename, &parser_handler, &user_data) < 0) {
-        fprintf(stderr, "Can't load '%s'\n", pFilename);
+    if (ini_parse(filename, &parser_handler, &user_data) < 0) {
+        fprintf(stderr, "Can't load '%s'\n", filename);
         return 1;
     }
 
