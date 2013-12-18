@@ -88,6 +88,11 @@ static int parser_handler(void* user, const char* section, const char* name,
     return process_entries(current_bus, current_io, name, value);
 }
 
+int validate_config(i2c_config* i2c_bus_config)
+{
+    return 1; /* error (not implemented)*/
+}
+
 int parse_config(const char* pFilename, i2c_config* pConfig)
 {
     bus_configs user_data = {
