@@ -61,12 +61,12 @@ static void signal_handler(int sig)
         fflush(stderr);
         stop_http_server(http_context);
         fprintf(stderr, "done.\n");
-
-        fprintf(stderr, "Closing I2C filehandles ... ");
-        fflush(stderr);
-        i2c_close_fhs(&i2c_bus_config);
-        fprintf(stderr, "done.\n");
     }
+
+    fprintf(stderr, "Closing I2C filehandles ... ");
+    fflush(stderr);
+    i2c_close_fhs(&i2c_bus_config);
+    fprintf(stderr, "done.\n");
 
     exit(ret);
 }
