@@ -15,14 +15,15 @@
 static struct mg_context* http_context = NULL;
 static i2c_config i2c_bus_config;
 
-static void sigIntHandler(int sig);
+static void signal_handler(int sig);
 
 int main(void) 
 {
     // List of options. Last element must be NULL.
     const char *http_options[] = {"listening_ports", "8080", NULL};
 
-    if (signal(SIGINT, sigIntHandler) == SIG_ERR)
+    if (signal(SIGINT, signal_handler) == SIG_ERR || 
+            signal(SIGTERM, signal_handler) == SIG_ERR)
     {
         fprintf(stderr, "Could not install signal handler for SIGINT.\n");
         return 1;
@@ -50,7 +51,7 @@ int main(void)
     return 0;
 }
 
-static void sigIntHandler(int sig)
+static void signal_handler(int sig)
 {
     int ret = 0;
 
