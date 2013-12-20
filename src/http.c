@@ -35,8 +35,8 @@ typedef enum
 } uri_stages;
 
 static int begin_request_handler(struct mg_connection *conn);
-
 static void print_debug_request(const char* uri, uri_parts* parts, request_type type);
+static request_type parse_uri(const char* uri, uri_parts* parts);
 
 struct mg_context* start_http_server(const char *http_options[], i2c_config* i2c_bus_config)
 {
@@ -48,6 +48,48 @@ struct mg_context* start_http_server(const char *http_options[], i2c_config* i2c
 
     return mg_start(&callbacks, NULL, http_options);
 
+}
+
+// This function will be called by mongoose on every new request.
+static int begin_request_handler(struct mg_connection *conn) 
+{
+    const struct mg_request_info *request_info = mg_get_request_info(conn);
+    char content[1024];
+
+    uri_parts parts;
+    request_type type = REQUEST_ERR;
+
+    // Prepare the message we're going to send
+    int content_length = snprintf(content, sizeof(content),
+            "{"
+            "\"msg\": \"%s\","
+            "\"remotePort\": %d,"
+            "\"queryString\": \"%s\","
+            "\"uri\": \"%s\""
+            "}",
+            "Hello from mongoose!",
+            request_info->remote_port,
+            request_info->query_string,
+            request_info->uri);
+
+    type = parse_uri(request_info->uri, &parts);
+
+#if 1
+    print_debug_request(request_info->uri, &parts, type);
+#endif
+
+    // Send HTTP reply to the client
+    mg_printf(conn,
+            "HTTP/1.1 200 OK\r\n"
+            "Content-Type: text/plain\r\n"
+            "Content-Length: %d\r\n"        // Always set Content-Length
+            "\r\n"
+            "%s",
+            content_length, content);
+
+    // Returning non-zero tells mongoose that our function has replied to
+    // the client, and mongoose should not send client any more data.
+    return 1;
 }
 
 int stop_http_server(struct mg_context* context)
@@ -113,49 +155,6 @@ static request_type parse_uri(const char* uri, uri_parts* parts)
 
     return result;
 }
-
-// This function will be called by mongoose on every new request.
-static int begin_request_handler(struct mg_connection *conn) 
-{
-    const struct mg_request_info *request_info = mg_get_request_info(conn);
-    char content[1024];
-
-    uri_parts parts;
-    request_type type = REQUEST_ERR;
-
-    // Prepare the message we're going to send
-    int content_length = snprintf(content, sizeof(content),
-            "{"
-            "\"msg\": \"%s\","
-            "\"remotePort\": %d,"
-            "\"queryString\": \"%s\","
-            "\"uri\": \"%s\""
-            "}",
-            "Hello from mongoose!",
-            request_info->remote_port,
-            request_info->query_string,
-            request_info->uri);
-
-    type = parse_uri(request_info->uri, &parts);
-
-#if 1
-    print_debug_request(request_info->uri, &parts, type);
-#endif
-
-    // Send HTTP reply to the client
-    mg_printf(conn,
-            "HTTP/1.1 200 OK\r\n"
-            "Content-Type: text/plain\r\n"
-            "Content-Length: %d\r\n"        // Always set Content-Length
-            "\r\n"
-            "%s",
-            content_length, content);
-
-    // Returning non-zero tells mongoose that our function has replied to
-    // the client, and mongoose should not send client any more data.
-    return 1;
-}
-
 
 static void print_debug_request(const char* uri, uri_parts* parts, request_type type)
 {
