@@ -7,6 +7,9 @@
 /* own includes */
 #include "i2c_io.h"
 
+#define MAX_NUM_CONF 128
+#define STR_CONF_LEN 256
+
 struct mg_context* start_http_server(const char *http_options[],
         i2c_config* i2c_bus_config);
 

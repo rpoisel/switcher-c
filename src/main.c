@@ -13,19 +13,26 @@
 #include "i2c.h"
 #include "i2c_io.h"
 
-#define STR_PATH_LEN 256
 #define DEFAULT_CONFIG_PATH "../config/io_ext.ini"
 
 static struct mg_context* http_context = NULL;
 static i2c_config i2c_bus_config;
+char *http_options[MAX_NUM_CONF];
 
 static void signal_handler(int sig);
 
 int main(int argc, char* argv[]) 
 {
     int option = -1;
-    char config_path[STR_PATH_LEN];
+    char config_path[STR_CONF_LEN];
+
+    http_options[0]  = "listening_ports";
+    http_options[1] = (char*)malloc(STR_CONF_LEN);
+    http_options[2] = NULL;
+
+#if 0
     const char *http_options[] = {"listening_ports", "8080", NULL};
+#endif
 
     if (signal(SIGINT, signal_handler) == SIG_ERR || 
             signal(SIGTERM, signal_handler) == SIG_ERR)
@@ -34,16 +41,19 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    strncpy(config_path, DEFAULT_CONFIG_PATH, STR_PATH_LEN);
-    while ((option = getopt(argc, argv, "hc:")) != -1)
+    strncpy(config_path, DEFAULT_CONFIG_PATH, STR_CONF_LEN);
+    while ((option = getopt(argc, argv, "hc:p:")) != -1)
     {
         switch (option)
         {
             case 'c':
-                strncpy(config_path, optarg, STR_PATH_LEN);
+                strncpy(config_path, optarg, STR_CONF_LEN);
+                break;
+            case 'p':
+                strncpy(http_options[1], optarg, STR_CONF_LEN);
                 break;
             default:
-                fprintf(stderr, "Usage: %s [-h] [-c config-file]\n", argv[0]);
+                fprintf(stderr, "Usage: %s [-h] [-c config-file] [-p port]\n", argv[0]);
                 exit(EXIT_FAILURE);
         }
     }
@@ -63,7 +73,7 @@ int main(int argc, char* argv[])
 
     i2c_init_fhs(&i2c_bus_config);
 
-    http_context = start_http_server(http_options, &i2c_bus_config);
+    http_context = start_http_server((const char **)http_options, &i2c_bus_config);
 
     while (1)
     {
@@ -89,6 +99,8 @@ static void signal_handler(int sig)
     fflush(stderr);
     i2c_close_fhs(&i2c_bus_config);
     fprintf(stderr, "done.\n");
+
+    free(http_options[1]);
 
     exit(ret);
 }
