@@ -93,7 +93,7 @@ static int parser_handler(void* user, const char* section, const char* name,
 
 int validate_config(i2c_config* i2c_bus_config)
 {
-    return 1; /* error (not implemented)*/
+    return EXIT_FAILURE; /* error (not implemented)*/
 }
 
 int parse_config(const char* filename, i2c_config* config)
