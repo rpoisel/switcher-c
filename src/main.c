@@ -28,11 +28,8 @@ int main(int argc, char* argv[])
 
     http_options[0]  = "listening_ports";
     http_options[1] = (char*)malloc(STR_CONF_LEN);
+    strncpy(http_options[1], "8080", STR_CONF_LEN);
     http_options[2] = NULL;
-
-#if 0
-    const char *http_options[] = {"listening_ports", "8080", NULL};
-#endif
 
     if (signal(SIGINT, signal_handler) == SIG_ERR || 
             signal(SIGTERM, signal_handler) == SIG_ERR)
