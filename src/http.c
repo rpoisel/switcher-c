@@ -36,6 +36,8 @@ typedef enum
 
 static int begin_request_handler(struct mg_connection *conn);
 
+static void print_debug_request(const char* uri, uri_parts* parts, request_type type);
+
 struct mg_context* start_http_server(const char *http_options[], i2c_config* i2c_bus_config)
 {
     struct mg_callbacks callbacks;
@@ -137,28 +139,7 @@ static int begin_request_handler(struct mg_connection *conn)
     type = parse_uri(request_info->uri, &parts);
 
 #if 1
-    fprintf(stderr, "URI: %s, ", request_info->uri);
-    switch (type)
-    {
-        case REQUEST_GET:
-            fprintf(stderr, "Request: GET, ");
-            break;
-        case REQUEST_SET:
-            fprintf(stderr, "Request: SET, ");
-            break;
-        default:
-            fprintf(stderr, "Request: ERR");
-            break;
-    }
-    if (REQUEST_ERR != type)
-    {
-        fprintf(stderr, "Bus: %d, Device: %d", parts.idx_bus, parts.idx_dev);
-        if (REQUEST_SET == type)
-        {
-            fprintf(stderr, ", Value: 0x%02X", parts.value);
-        }
-    }
-    fprintf(stderr, "\n");
+    print_debug_request(request_info->uri, &parts, type);
 #endif
 
     // Send HTTP reply to the client
@@ -175,3 +156,29 @@ static int begin_request_handler(struct mg_connection *conn)
     return 1;
 }
 
+
+static void print_debug_request(const char* uri, uri_parts* parts, request_type type)
+{
+    fprintf(stderr, "URI: %s, ", uri);
+    switch (type)
+    {
+        case REQUEST_GET:
+            fprintf(stderr, "Request: GET, ");
+            break;
+        case REQUEST_SET:
+            fprintf(stderr, "Request: SET, ");
+            break;
+        default:
+            fprintf(stderr, "Request: ERR");
+            break;
+    }
+    if (REQUEST_ERR != type)
+    {
+        fprintf(stderr, "Bus: %d, Device: %d", parts->idx_bus, parts->idx_dev);
+        if (REQUEST_SET == type)
+        {
+            fprintf(stderr, ", Value: 0x%02X", parts->value);
+        }
+    }
+    fprintf(stderr, "\n");
+}
