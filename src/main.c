@@ -68,7 +68,11 @@ int main(int argc, char* argv[])
     printf("Number of busses: %d\n", i2c_bus_config.num_busses);
 #endif
 
-    i2c_init_fhs(&i2c_bus_config);
+    if (i2c_init_fhs(&i2c_bus_config) == EXIT_FAILURE)
+    {
+        fprintf(stderr, "Could not open I2C device files. \n");
+        exit(EXIT_FAILURE);
+    }
 
     http_context = start_http_server((const char **)http_options, &i2c_bus_config);
 
