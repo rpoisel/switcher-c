@@ -26,10 +26,10 @@ typedef enum
     STAGE_VALUE
 } uri_stages;
 
+/* function declarations */
 static int begin_request_handler(struct mg_connection *conn);
 static void print_debug_request(const char* uri, i2c_data* parts, request_type type);
 static request_type parse_uri(const char* uri, i2c_data* parts);
-
 static int i2c_data_to_json(i2c_data* data, char* buf, int buf_size);
 
 struct mg_context* start_http_server(const char *http_options[], i2c_config* i2c_bus_config)

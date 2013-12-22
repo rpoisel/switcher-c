@@ -8,7 +8,7 @@
 /* included libraries */
 
 /* own functions */
-#include "parse.h"
+#include "parse_i2c.h"
 #include "http.h"
 #include "i2c.h"
 #include "i2c_io.h"

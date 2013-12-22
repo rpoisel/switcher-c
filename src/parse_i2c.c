@@ -4,7 +4,7 @@
 
 #include "ini.h"
 
-#include "parse.h"
+#include "parse_i2c.h"
 #include "i2c_io.h"
 #include "pcf8574.h"
 
