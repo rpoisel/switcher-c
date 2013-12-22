@@ -9,6 +9,13 @@
 /* for example: /dev/i2c-2 */
 #define MAX_DEV_FILE_LEN 32
 
+typedef enum
+{
+    CMD_NONE,
+    CMD_WRITE,
+    CMD_READ,
+} i2c_cmd;
+
 typedef struct
 {
     /* init device */
@@ -40,5 +47,14 @@ typedef struct
     i2c_bus busses[MAX_I2C_BUSSES];
     unsigned num_busses;
 } i2c_config;
+
+typedef struct
+{
+    unsigned idx_bus;
+    unsigned idx_dev;
+    unsigned value;
+} i2c_data;
+
+int perform_i2c_io(i2c_config* config, i2c_data* data, i2c_cmd cmd);
 
 #endif

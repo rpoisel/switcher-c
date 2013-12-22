@@ -8,9 +8,8 @@
 
 /* own includes */
 #include "http.h"
-#include "i2c_io.h"
 
-#define STRTOK_BUF_SIZE 1024
+#define BUF_LEN 1024
 #define URI_DELIM "/"
 
 typedef enum
@@ -20,13 +19,6 @@ typedef enum
     REQUEST_SET,
 } request_type;
 
-typedef struct
-{
-    unsigned idx_bus;
-    unsigned idx_dev;
-    unsigned value;
-} uri_parts;
-
 typedef enum
 {
     STAGE_BUS = 0,
@@ -35,8 +27,10 @@ typedef enum
 } uri_stages;
 
 static int begin_request_handler(struct mg_connection *conn);
-static void print_debug_request(const char* uri, uri_parts* parts, request_type type);
-static request_type parse_uri(const char* uri, uri_parts* parts);
+static void print_debug_request(const char* uri, i2c_data* parts, request_type type);
+static request_type parse_uri(const char* uri, i2c_data* parts);
+
+static int i2c_data_to_json(i2c_data* data, char* buf, int buf_size);
 
 struct mg_context* start_http_server(const char *http_options[], i2c_config* i2c_bus_config)
 {
@@ -46,7 +40,7 @@ struct mg_context* start_http_server(const char *http_options[], i2c_config* i2c
     memset(&callbacks, 0, sizeof(callbacks));
     callbacks.begin_request = begin_request_handler;
 
-    return mg_start(&callbacks, NULL, http_options);
+    return mg_start(&callbacks, i2c_bus_config, http_options);
 
 }
 
@@ -54,29 +48,24 @@ struct mg_context* start_http_server(const char *http_options[], i2c_config* i2c
 static int begin_request_handler(struct mg_connection *conn) 
 {
     const struct mg_request_info *request_info = mg_get_request_info(conn);
-    char content[1024];
-
-    uri_parts parts;
+    char content[BUF_LEN];
+    i2c_config* i2c_bus_config = (i2c_config*)request_info->user_data;
+    int content_length = -1;
+    i2c_data parts;
     request_type type = REQUEST_ERR;
 
-    // Prepare the message we're going to send
-    int content_length = snprintf(content, sizeof(content),
-            "{"
-            "\"msg\": \"%s\","
-            "\"remotePort\": %d,"
-            "\"queryString\": \"%s\","
-            "\"uri\": \"%s\""
-            "}",
-            "Hello from mongoose!",
-            request_info->remote_port,
-            request_info->query_string,
-            request_info->uri);
-
+    /* process request parameters */
     type = parse_uri(request_info->uri, &parts);
 
 #if 1
     print_debug_request(request_info->uri, &parts, type);
 #endif
+
+    /* forward received values to I2C subsystem */
+    perform_i2c_io(i2c_bus_config, &parts, type == REQUEST_GET ? CMD_READ : CMD_WRITE);
+
+    /* convert i2c data to json */
+    content_length = i2c_data_to_json(&parts, content, BUF_LEN);
 
     // Send HTTP reply to the client
     mg_printf(conn,
@@ -100,11 +89,25 @@ int stop_http_server(struct mg_context* context)
     return EXIT_SUCCESS;
 }
 
-static request_type parse_uri(const char* uri, uri_parts* parts)
+static int i2c_data_to_json(i2c_data* data, char* buf, int buf_size)
+{
+    // Prepare the message we're going to send
+    return snprintf(buf, buf_size,
+            "{ "
+            "\"bus_idx\": \"%d\", "
+            "\"dev_idx\": %d, "
+            "\"value\": \"%d\""
+            " }",
+            data->idx_bus,
+            data->idx_dev,
+            data->value);
+}
+
+static request_type parse_uri(const char* uri, i2c_data* parts)
 {
     request_type result = REQUEST_ERR;
 
-    char buf_uri[STRTOK_BUF_SIZE];
+    char buf_uri[BUF_LEN];
 
     char* rest;
     char* token = NULL;
@@ -114,7 +117,7 @@ static request_type parse_uri(const char* uri, uri_parts* parts)
     int base = 10;
 
     /* circumvent const => unconst cast */
-    strncpy(buf_uri, uri, STRTOK_BUF_SIZE);
+    strncpy(buf_uri, uri, BUF_LEN);
 
     token = strtok_r(buf_uri, URI_DELIM, &rest);
     while (cnt_stage <= STAGE_VALUE && token != NULL)
@@ -156,7 +159,7 @@ static request_type parse_uri(const char* uri, uri_parts* parts)
     return result;
 }
 
-static void print_debug_request(const char* uri, uri_parts* parts, request_type type)
+static void print_debug_request(const char* uri, i2c_data* parts, request_type type)
 {
     fprintf(stderr, "URI: %s, ", uri);
     switch (type)

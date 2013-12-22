@@ -26,6 +26,7 @@ int main(int argc, char* argv[])
     int option = -1;
     char config_path[STR_CONF_LEN];
 
+    /* hacky options */
     http_options[0]  = "listening_ports";
     http_options[1] = (char*)malloc(STR_CONF_LEN);
     strncpy(http_options[1], "8080", STR_CONF_LEN);
