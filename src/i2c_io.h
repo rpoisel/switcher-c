@@ -44,8 +44,8 @@ typedef struct
 
 typedef struct
 {
-    i2c_bus busses[MAX_I2C_BUSSES];
     unsigned num_busses;
+    i2c_bus busses[MAX_I2C_BUSSES];
 } i2c_config;
 
 typedef struct
