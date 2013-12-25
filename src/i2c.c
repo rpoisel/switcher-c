@@ -3,8 +3,15 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <errno.h>
+#include <stdio.h>
+#include <string.h>
+
+#include <linux/i2c-dev.h>
 
 #include "i2c_io.h"
+
+#define BUF_LEN 256
 
 int i2c_init_fhs(i2c_config* config)
 {
@@ -37,4 +44,33 @@ int i2c_close_fhs(i2c_config* config)
     }
 
     return EXIT_SUCCESS;
+}
+
+int i2c_write(int fh, uint8_t address, uint32_t value,
+        int (*cb_error)(char* error_msg, char* buf, int buf_size),
+        char* buf,
+        int buf_size)
+{
+    ssize_t result = -1;
+    char error_msg[BUF_LEN];
+
+    /* set slave address */
+    if (ioctl(fh, I2C_SLAVE, address) < 0)
+    {
+        snprintf(error_msg, BUF_LEN, "ioctl error: %s", strerror(errno));
+        if (cb_error != NULL)
+        {
+            cb_error(error_msg, buf, buf_size);
+        }
+        return -1;
+    }
+
+    /* write to I2C */
+    result = write(fh, &value, 1);
+    if (result < 0 && cb_error != NULL)
+    {
+        snprintf(error_msg, BUF_LEN, "Error writing file: %s", strerror(errno));
+        cb_error(error_msg, buf, buf_size);
+    }
+    return result;
 }

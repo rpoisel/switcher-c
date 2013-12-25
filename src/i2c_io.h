@@ -25,7 +25,10 @@ typedef struct
     uint32_t (*read)(void);
 
     /* write IOs */
-    void (*write)(uint8_t pAddres, uint32_t pValue);
+    int (*write)(int fh, uint8_t pAddress, uint32_t pValue,
+        int (*cb_error)(char* error_msg, char* buf, int buf_size),
+        char* buf,
+        int buf_size);
 } i2c_drv;
 
 typedef struct
