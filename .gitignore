@@ -26,12 +26,6 @@ switcher
 *.x86_64
 *.hex
 
-CMakeCache.txt
-CMakeFiles
-Makefile
-cmake_install.cmake
-install_manifest.txt
-
 # Other files
 
 *.swp
