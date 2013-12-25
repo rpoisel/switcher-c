@@ -9,10 +9,10 @@ static int pcf8574_write(int fh, uint8_t pAddress, uint32_t pValue,
         int (*cb_error)(char* error_msg, char* buf, int buf_size),
         char* buf,
         int buf_size);
-static uint32_t pcf8574_init(void* pInitValue);
+static uint32_t pcf8574_init(void* init_value);
 static uint32_t pcf8574_read(void);
 
-static i2c_drv sHandle = {
+static i2c_drv handle = {
     .init = &pcf8574_init, 
     .read = &pcf8574_read,
     .write = &pcf8574_write
@@ -28,7 +28,7 @@ static int pcf8574_write(int fh, uint8_t pAddress, uint32_t pValue,
     return i2c_write(fh, pAddress, pValue, cb_error, buf, buf_size);
 }
 
-static uint32_t pcf8574_init(void* pInitValue)
+static uint32_t pcf8574_init(void* init_value)
 {
     /* nothing to do here */
     return 0;
@@ -43,11 +43,6 @@ static uint32_t pcf8574_read(void)
 
 i2c_drv* get_pcf8574_drv()
 {
-    return &sHandle;
-}
-
-void close_pcf8574_drv(i2c_drv* pHandle)
-{
-    /* nothing to do here */
+    return &handle;
 }
 

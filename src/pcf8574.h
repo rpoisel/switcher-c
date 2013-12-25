@@ -3,6 +3,4 @@
 
 i2c_drv* get_pcf8574_drv();
 
-void close_pcf8574_drv(i2c_drv* pHandle);
-
 #endif
