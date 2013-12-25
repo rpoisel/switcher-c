@@ -17,7 +17,7 @@
 
 static struct mg_context* http_context = NULL;
 static i2c_config i2c_bus_config;
-char *http_options[MAX_NUM_CONF] = { NULL };
+static char *http_options[MAX_NUM_CONF] = { NULL };
 
 static void signal_handler(int sig);
 
