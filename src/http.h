@@ -15,4 +15,7 @@ struct mg_context* start_http_server(const char *http_options[],
 
 int stop_http_server(struct mg_context* context);
 
+int i2c_data_to_json(i2c_data* data, char* buf, int buf_size);
+int error_to_json(char* error_msg, char* buf, int buf_size);
+
 #endif
