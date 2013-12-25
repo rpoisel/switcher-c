@@ -25,13 +25,15 @@ int main(int argc, char* argv[])
 {
     int option = -1;
     char config_path[STR_CONF_LEN];
+    int cnt_option = 0;
 
-#define ADD_OPTION_ELEMENT(idx, option) \
-    http_options[idx] = (char*)malloc(STR_CONF_LEN); \
-    strncpy(http_options[idx], option, STR_CONF_LEN);
+#define ADD_OPTION_ELEMENT(option) \
+    http_options[cnt_option] = (char*)malloc(STR_CONF_LEN); \
+    strncpy(http_options[cnt_option], option, STR_CONF_LEN); \
+    cnt_option++;
 
-    ADD_OPTION_ELEMENT(0, "listening_ports")
-    ADD_OPTION_ELEMENT(1, "8080")
+    ADD_OPTION_ELEMENT("listening_ports")
+    ADD_OPTION_ELEMENT("8080")
 
     if (signal(SIGINT, signal_handler) == SIG_ERR || 
             signal(SIGTERM, signal_handler) == SIG_ERR)
