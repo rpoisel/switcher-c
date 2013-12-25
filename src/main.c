@@ -17,7 +17,7 @@
 
 static struct mg_context* http_context = NULL;
 static i2c_config i2c_bus_config;
-char *http_options[MAX_NUM_CONF];
+char *http_options[MAX_NUM_CONF] = { NULL };
 
 static void signal_handler(int sig);
 
@@ -26,11 +26,12 @@ int main(int argc, char* argv[])
     int option = -1;
     char config_path[STR_CONF_LEN];
 
-    /* hacky options */
-    http_options[0]  = "listening_ports";
-    http_options[1] = (char*)malloc(STR_CONF_LEN);
-    strncpy(http_options[1], "8080", STR_CONF_LEN);
-    http_options[2] = NULL;
+#define ADD_OPTION_ELEMENT(idx, option) \
+    http_options[idx] = (char*)malloc(STR_CONF_LEN); \
+    strncpy(http_options[idx], option, STR_CONF_LEN);
+
+    ADD_OPTION_ELEMENT(0, "listening_ports")
+    ADD_OPTION_ELEMENT(1, "8080")
 
     if (signal(SIGINT, signal_handler) == SIG_ERR || 
             signal(SIGTERM, signal_handler) == SIG_ERR)
@@ -88,6 +89,7 @@ int main(int argc, char* argv[])
 static void signal_handler(int sig)
 {
     int ret = 0;
+    int cnt = 0;
 
     if (NULL != http_context)
     {
@@ -102,7 +104,13 @@ static void signal_handler(int sig)
     i2c_close_fhs(&i2c_bus_config);
     fprintf(stderr, "done.\n");
 
-    free(http_options[1]);
+    for (cnt = 0; cnt < MAX_NUM_CONF; cnt++)
+    {
+        if (http_options[cnt] != NULL)
+        {
+            free(http_options[cnt]);
+        }
+    }
 
     exit(ret);
 }
