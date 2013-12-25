@@ -47,7 +47,7 @@ struct mg_context* start_http_server(const char *http_options[], i2c_config* i2c
 
 }
 
-// This function will be called by mongoose on every new request.
+/* This function will be called by mongoose on every new request. */
 static int begin_request_handler(struct mg_connection *conn) 
 {
     const struct mg_request_info *request_info = mg_get_request_info(conn);
@@ -80,23 +80,26 @@ static int begin_request_handler(struct mg_connection *conn)
         error_to_json("Invalid request type", content, BUF_LEN);
     }
 
-    // Send HTTP reply to the client
+    /* Send HTTP reply to the client */
     mg_printf(conn,
             "HTTP/1.1 200 OK\r\n"
             "Content-Type: text/plain\r\n"
-            "Content-Length: %zu\r\n"        // Always set Content-Length
+            "Content-Length: %zu\r\n"
             "\r\n"
             "%s",
             strnlen(content, BUF_LEN), content);
 
-    // Returning non-zero tells mongoose that our function has replied to
-    // the client, and mongoose should not send client any more data.
+    /*
+     * Returning non-zero tells mongoose that our function has
+     * replied to the client, and mongoose should not send client
+     * any more data.
+     */
     return 1;
 }
 
 int stop_http_server(struct mg_context* context)
 {
-    // Stop the server.
+    /* Stop the server. */
     mg_stop(context);
 
     return EXIT_SUCCESS;
