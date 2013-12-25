@@ -55,6 +55,10 @@ typedef struct
     unsigned value;
 } i2c_data;
 
-int perform_i2c_io(i2c_config* config, i2c_data* data, i2c_cmd cmd);
+int perform_i2c_io(i2c_config* config, i2c_data* data, i2c_cmd cmd,
+        int (*cb_success)(i2c_data* data, char* buf, int buf_size),
+        int (*cb_error)(char* error_msg, char* buf, int buf_size),
+        char* buf,
+        int buf_size);
 
 #endif

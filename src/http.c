@@ -26,11 +26,14 @@ typedef enum
     STAGE_VALUE
 } uri_stages;
 
-/* function declarations */
+/* public function declarations */
+int i2c_data_to_json(i2c_data* data, char* buf, int buf_size);
+int error_to_json(char* error_msg, char* buf, int buf_size);
+
+/* static function declarations */
 static int begin_request_handler(struct mg_connection *conn);
 static void print_debug_request(const char* uri, i2c_data* parts, request_type type);
 static request_type parse_uri(const char* uri, i2c_data* parts);
-static int i2c_data_to_json(i2c_data* data, char* buf, int buf_size);
 
 struct mg_context* start_http_server(const char *http_options[], i2c_config* i2c_bus_config)
 {
@@ -48,9 +51,8 @@ struct mg_context* start_http_server(const char *http_options[], i2c_config* i2c
 static int begin_request_handler(struct mg_connection *conn) 
 {
     const struct mg_request_info *request_info = mg_get_request_info(conn);
-    char content[BUF_LEN];
+    char content[BUF_LEN] = { '\0' };
     i2c_config* i2c_bus_config = (i2c_config*)request_info->user_data;
-    int content_length = -1;
     i2c_data parts;
     request_type type = REQUEST_ERR;
 
@@ -62,19 +64,30 @@ static int begin_request_handler(struct mg_connection *conn)
 #endif
 
     /* forward received values to I2C subsystem */
-    perform_i2c_io(i2c_bus_config, &parts, type == REQUEST_GET ? CMD_READ : CMD_WRITE);
+    if (type != REQUEST_ERR)
+    {
+        perform_i2c_io(i2c_bus_config,
+                &parts,
+                type == REQUEST_GET ? CMD_READ : CMD_WRITE,
+                i2c_data_to_json,
+                error_to_json,
+                content,
+                BUF_LEN);
 
-    /* convert i2c data to json */
-    content_length = i2c_data_to_json(&parts, content, BUF_LEN);
+    }
+    else
+    {
+        error_to_json("Invalid request type", content, BUF_LEN);
+    }
 
     // Send HTTP reply to the client
     mg_printf(conn,
             "HTTP/1.1 200 OK\r\n"
             "Content-Type: text/plain\r\n"
-            "Content-Length: %d\r\n"        // Always set Content-Length
+            "Content-Length: %zu\r\n"        // Always set Content-Length
             "\r\n"
             "%s",
-            content_length, content);
+            strnlen(content, BUF_LEN), content);
 
     // Returning non-zero tells mongoose that our function has replied to
     // the client, and mongoose should not send client any more data.
@@ -89,9 +102,8 @@ int stop_http_server(struct mg_context* context)
     return EXIT_SUCCESS;
 }
 
-static int i2c_data_to_json(i2c_data* data, char* buf, int buf_size)
+int i2c_data_to_json(i2c_data* data, char* buf, int buf_size)
 {
-    // Prepare the message we're going to send
     return snprintf(buf, buf_size,
             "{ "
             "\"bus_idx\": \"%d\", "
@@ -101,6 +113,15 @@ static int i2c_data_to_json(i2c_data* data, char* buf, int buf_size)
             data->idx_bus,
             data->idx_dev,
             data->value);
+}
+
+int error_to_json(char* error_msg, char* buf, int buf_size)
+{
+    return snprintf(buf, buf_size,
+            "{ "
+            "\"msg\": \"%s\""
+            " }",
+            error_msg);
 }
 
 static request_type parse_uri(const char* uri, i2c_data* parts)
