@@ -93,7 +93,7 @@ static int i2c_ioop(int fh, uint8_t address, void* buf, size_t buf_size,
     result = ioop(fh, buf, buf_size);
     if (result < 0 && cb_error != NULL)
     {
-        snprintf(error_msg, BUF_LEN, "Error writing file: %s", strerror(errno));
+        snprintf(error_msg, BUF_LEN, "Error performing IO with file: %s", strerror(errno));
         cb_error(error_msg, buf_msg, buf_size_msg);
     }
     return result;
