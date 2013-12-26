@@ -89,7 +89,7 @@ static int i2c_ioop(int fh, uint8_t address, void* buf, size_t buf_size,
         return -1;
     }
 
-    /* write to I2C */
+    /* read/write from/to I2C */
     result = ioop(fh, buf, buf_size);
     if (result < 0 && cb_error != NULL)
     {
