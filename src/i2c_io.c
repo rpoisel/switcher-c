@@ -29,7 +29,17 @@ int perform_i2c_io(i2c_config* config, i2c_data* data, i2c_cmd cmd,
             }
             else if (cmd == CMD_READ)
             {
-                cb_success(data, buf, buf_size);
+                if (((config->busses + data->idx_bus)->devices + data->idx_dev)->drv_handle->read(
+                    (config->busses + data->idx_bus)->fh,
+                    ((config->busses + data->idx_bus)->devices + data->idx_dev)->address,
+                    &data->value,
+                    cb_error,
+                    buf,
+                    buf_size
+                    ) > 0)
+                {
+                    cb_success(data, buf, buf_size);
+                }
             }
             else
             {
