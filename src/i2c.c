@@ -46,10 +46,11 @@ int i2c_close_fhs(i2c_config* config)
     return EXIT_SUCCESS;
 }
 
-int i2c_write(int fh, uint8_t address, uint32_t value,
+int i2c_ioop(int fh, uint8_t address, void* buf, size_t buf_size,
+        int (*ioop)(int fd, void *buf, size_t count),
         int (*cb_error)(char* error_msg, char* buf, int buf_size),
-        char* buf,
-        int buf_size)
+        char* buf_msg,
+        int buf_size_msg)
 {
     ssize_t result = -1;
     char error_msg[BUF_LEN];
@@ -60,17 +61,22 @@ int i2c_write(int fh, uint8_t address, uint32_t value,
         snprintf(error_msg, BUF_LEN, "ioctl error: %s", strerror(errno));
         if (cb_error != NULL)
         {
-            cb_error(error_msg, buf, buf_size);
+            cb_error(error_msg, buf_msg, buf_size_msg);
         }
         return -1;
     }
 
     /* write to I2C */
-    result = write(fh, &value, 1);
+    result = ioop(fh, buf, buf_size);
     if (result < 0 && cb_error != NULL)
     {
         snprintf(error_msg, BUF_LEN, "Error writing file: %s", strerror(errno));
-        cb_error(error_msg, buf, buf_size);
+        cb_error(error_msg, buf_msg, buf_size_msg);
     }
     return result;
+}
+
+ssize_t write_unconst(int fd, void *buf, size_t count)
+{
+    return write(fd, (const void*)buf, count);
 }

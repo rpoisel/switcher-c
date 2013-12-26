@@ -19,16 +19,19 @@ typedef enum
 typedef struct
 {
     /* init device */
-    uint32_t (*init)(void* pInitValue);
+    uint32_t (*init)(void* init_value);
 
     /* read IOs */
-    uint32_t (*read)(void);
+    int (*read)(int fh, uint8_t address, uint32_t* value,
+        int (*cb_error)(char* error_msg, char* buf, int buf_size),
+        char* buf_msg,
+        int buf_size_msg);
 
     /* write IOs */
-    int (*write)(int fh, uint8_t pAddress, uint32_t pValue,
+    int (*write)(int fh, uint8_t address, const uint32_t* value,
         int (*cb_error)(char* error_msg, char* buf, int buf_size),
-        char* buf,
-        int buf_size);
+        char* buf_msg,
+        int buf_size_msg);
 } i2c_drv;
 
 typedef struct
@@ -55,7 +58,7 @@ typedef struct
 {
     unsigned idx_bus;
     unsigned idx_dev;
-    unsigned value;
+    uint32_t value;
 } i2c_data;
 
 int perform_i2c_io(i2c_config* config, i2c_data* data, i2c_cmd cmd,

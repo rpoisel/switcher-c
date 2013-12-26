@@ -17,7 +17,7 @@ int perform_i2c_io(i2c_config* config, i2c_data* data, i2c_cmd cmd,
                 if (((config->busses + data->idx_bus)->devices + data->idx_dev)->drv_handle->write(
                     (config->busses + data->idx_bus)->fh,
                     ((config->busses + data->idx_bus)->devices + data->idx_dev)->address,
-                    data->value,
+                    &data->value,
                     cb_error,
                     buf,
                     buf_size

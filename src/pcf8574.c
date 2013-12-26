@@ -1,16 +1,21 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #include "i2c.h"
 #include "i2c_io.h"
 #include "pcf8574.h"
 
-static int pcf8574_write(int fh, uint8_t pAddress, uint32_t pValue,
+    /* write IOs */
+static int pcf8574_write(int fh, uint8_t address, const uint32_t* value,
         int (*cb_error)(char* error_msg, char* buf, int buf_size),
-        char* buf,
-        int buf_size);
+        char* buf_msg,
+        int buf_size_msg);
 static uint32_t pcf8574_init(void* init_value);
-static uint32_t pcf8574_read(void);
+static int pcf8574_read(int fh, uint8_t address, uint32_t* value,
+        int (*cb_error)(char* error_msg, char* buf, int buf_size),
+        char* buf_msg,
+        int buf_size_msg);
 
 static i2c_drv handle = {
     .init = &pcf8574_init, 
@@ -19,13 +24,13 @@ static i2c_drv handle = {
 };
 
 /* write IOs */
-static int pcf8574_write(int fh, uint8_t pAddress, uint32_t pValue,
+static int pcf8574_write(int fh, uint8_t address, const uint32_t* value,
         int (*cb_error)(char* error_msg, char* buf, int buf_size),
-        char* buf,
-        int buf_size)
+        char* buf_msg,
+        int buf_size_msg)
 {
-    /* I2C write */
-    return i2c_write(fh, pAddress, pValue, cb_error, buf, buf_size);
+    uint8_t states = (uint8_t)(*value);
+    return i2c_ioop(fh, address, &states, sizeof(states), write_unconst, cb_error, buf_msg, buf_size_msg);
 }
 
 static uint32_t pcf8574_init(void* init_value)
@@ -35,10 +40,15 @@ static uint32_t pcf8574_init(void* init_value)
 }
 
 /* read IOs */
-static uint32_t pcf8574_read(void)
+static int pcf8574_read(int fh, uint8_t address, uint32_t* value,
+        int (*cb_error)(char* error_msg, char* buf, int buf_size),
+        char* buf_msg,
+        int buf_size_msg)
 {
-    /* I2C read */
-    return 0;
+    uint8_t states = 0;
+    int result = i2c_ioop(fh, address, &states, sizeof(states), read, cb_error, buf_msg, buf_size_msg);
+    (*value) = states;
+    return result;
 }
 
 i2c_drv* get_pcf8574_drv()
