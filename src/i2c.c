@@ -9,9 +9,16 @@
 
 #include <linux/i2c-dev.h>
 
+#include "i2c.h"
 #include "i2c_io.h"
 
 #define BUF_LEN 256
+
+static int i2c_ioop(int fh, uint8_t address, void* buf, size_t buf_size,
+        ssize_t (*ioop)(int fd, void* buf, size_t count),
+        int (*cb_error)(char* error_msg, char* buf, int buf_size),
+        char* buf_msg,
+        int buf_size_msg);
 
 int i2c_init_fhs(i2c_config* config)
 {
@@ -46,8 +53,24 @@ int i2c_close_fhs(i2c_config* config)
     return EXIT_SUCCESS;
 }
 
-int i2c_ioop(int fh, uint8_t address, void* buf, size_t buf_size,
-        int (*ioop)(int fd, void *buf, size_t count),
+int i2c_write(int fh, uint8_t address, void* buf, size_t buf_size,
+        int (*cb_error)(char* error_msg, char* buf, int buf_size),
+        char* buf_msg,
+        int buf_size_msg)
+{
+    return i2c_ioop(fh, address, buf, buf_size, write_unconst, cb_error, buf_msg, buf_size_msg);
+}
+
+int i2c_read(int fh, uint8_t address, void* buf, size_t buf_size,
+        int (*cb_error)(char* error_msg, char* buf, int buf_size),
+        char* buf_msg,
+        int buf_size_msg)
+{
+    return i2c_ioop(fh, address, buf, buf_size, read, cb_error, buf_msg, buf_size_msg);
+}
+
+static int i2c_ioop(int fh, uint8_t address, void* buf, size_t buf_size,
+        ssize_t (*ioop)(int fd, void* buf, size_t count),
         int (*cb_error)(char* error_msg, char* buf, int buf_size),
         char* buf_msg,
         int buf_size_msg)

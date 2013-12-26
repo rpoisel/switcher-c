@@ -30,7 +30,7 @@ static int pcf8574_write(int fh, uint8_t address, const uint32_t* value,
         int buf_size_msg)
 {
     uint8_t states = (uint8_t)(*value);
-    return i2c_ioop(fh, address, &states, sizeof(states), write_unconst, cb_error, buf_msg, buf_size_msg);
+    return i2c_write(fh, address, &states, sizeof(states), cb_error, buf_msg, buf_size_msg);
 }
 
 static uint32_t pcf8574_init(void* init_value)
@@ -46,7 +46,7 @@ static int pcf8574_read(int fh, uint8_t address, uint32_t* value,
         int buf_size_msg)
 {
     uint8_t states = 0;
-    int result = i2c_ioop(fh, address, &states, sizeof(states), read, cb_error, buf_msg, buf_size_msg);
+    int result = i2c_read(fh, address, &states, sizeof(states), cb_error, buf_msg, buf_size_msg);
     (*value) = states;
     return result;
 }
