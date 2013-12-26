@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <unistd.h>
 
 #include "i2c.h"
 #include "i2c_io.h"
