@@ -4,6 +4,7 @@
 #include <string.h>
 #include <signal.h>
 #include <unistd.h>
+#include <syslog.h>
 
 /* included libraries */
 
@@ -14,12 +15,18 @@
 #include "i2c_io.h"
 
 #define DEFAULT_CONFIG_PATH "../config/io_ext.ini"
+#define DAEMON_NAME "switcher"
 
 static struct mg_context* http_context = NULL;
 static i2c_config i2c_bus_config;
 static char *http_options[MAX_NUM_CONF] = { NULL };
 
 static void signal_handler(int sig);
+
+/*
+ * Useful hints:
+ *   * http://stackoverflow.com/questions/17954432/creating-a-daemon-in-linux
+ */
 
 int main(int argc, char* argv[]) 
 {
@@ -35,10 +42,12 @@ int main(int argc, char* argv[])
     ADD_OPTION_ELEMENT("listening_ports")
     ADD_OPTION_ELEMENT("8080")
 
+    openlog(DAEMON_NAME, LOG_PID, LOG_DAEMON);
+
     if (signal(SIGINT, signal_handler) == SIG_ERR || 
             signal(SIGTERM, signal_handler) == SIG_ERR)
     {
-        fprintf(stderr, "Could not install signal handler for SIGINT.\n");
+        syslog(LOG_ERR, "Could not install signal handler for SIGINT.");
         return 1;
     }
 
@@ -61,20 +70,14 @@ int main(int argc, char* argv[])
 
     if (parse_config(config_path, &i2c_bus_config) == EXIT_FAILURE)
     {
+        syslog(LOG_ERR, "Error parsing the configuration file.");
         exit(EXIT_FAILURE);
     }
     validate_config(&i2c_bus_config);
 
-#if 0
-    /* test parsing functionality */
-    i2c_bus_config.busses[0].devices[0].drv_handle->write(0x38, 0xFF);
-    printf("Address: 0x%02X\n", i2c_bus_config.busses[0].devices[0].address);
-    printf("Number of busses: %d\n", i2c_bus_config.num_busses);
-#endif
-
     if (i2c_init_fhs(&i2c_bus_config) == EXIT_FAILURE)
     {
-        fprintf(stderr, "Could not open I2C device files. \n");
+        syslog(LOG_ERR, "Could not open I2C device files.");
         exit(EXIT_FAILURE);
     }
 
@@ -95,16 +98,12 @@ static void signal_handler(int sig)
 
     if (NULL != http_context)
     {
-        fprintf(stderr, "Shutting down HTTP server ... ");
-        fflush(stderr);
+        syslog(LOG_INFO, "Shutting down HTTP server.");
         stop_http_server(http_context);
-        fprintf(stderr, "done.\n");
     }
 
-    fprintf(stderr, "Closing I2C filehandles ... ");
-    fflush(stderr);
+    syslog(LOG_INFO, "Closing I2C filehandles.");
     i2c_close_fhs(&i2c_bus_config);
-    fprintf(stderr, "done.\n");
 
     for (cnt = 0; cnt < MAX_NUM_CONF; cnt++)
     {
@@ -113,6 +112,8 @@ static void signal_handler(int sig)
             free(http_options[cnt]);
         }
     }
+
+    closelog();
 
     exit(ret);
 }

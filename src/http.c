@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <limits.h>
+#include <syslog.h>
 
 /* 3rd party libraries */
 
@@ -181,26 +182,29 @@ static request_type parse_uri(const char* uri, i2c_data* parts)
 
 static void print_debug_request(const char* uri, i2c_data* parts, request_type type)
 {
-    fprintf(stderr, "URI: %s, ", uri);
+    char message[BUF_LEN] = { '\0' };
+    int cnt = 0;
+
+    cnt += snprintf(message, BUF_LEN, "URI: %s, ", uri);
     switch (type)
     {
         case REQUEST_GET:
-            fprintf(stderr, "Request: GET, ");
+            cnt += snprintf(message + cnt, BUF_LEN, "Request: GET, ");
             break;
         case REQUEST_SET:
-            fprintf(stderr, "Request: SET, ");
+            cnt += snprintf(message + cnt, BUF_LEN, "Request: SET, ");
             break;
         default:
-            fprintf(stderr, "Request: ERR");
+            cnt += snprintf(message + cnt, BUF_LEN, "Request: ERR");
             break;
     }
     if (REQUEST_ERR != type)
     {
-        fprintf(stderr, "Bus: %d, Device: %d", parts->idx_bus, parts->idx_dev);
+        cnt += snprintf(message + cnt, BUF_LEN, "Bus: %d, Device: %d", parts->idx_bus, parts->idx_dev);
         if (REQUEST_SET == type)
         {
-            fprintf(stderr, ", Value: 0x%02X", parts->value);
+            cnt += snprintf(message + cnt, BUF_LEN, ", Value: 0x%02X", parts->value);
         }
     }
-    fprintf(stderr, "\n");
+    syslog(LOG_INFO, "%s", message);
 }

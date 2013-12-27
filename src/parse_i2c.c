@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <syslog.h>
 
 #include "ini.h"
 
@@ -105,7 +106,7 @@ int parse_config(const char* filename, i2c_config* config)
         .current_dev_id = -1
     };
     if (ini_parse(filename, &parser_handler, &user_data) < 0) {
-        fprintf(stderr, "Can't load '%s'\n", filename);
+        syslog(LOG_ERR, "Can't load '%s'\n", filename);
         return EXIT_FAILURE;
     }
 
