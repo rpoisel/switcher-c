@@ -5,6 +5,10 @@
 #include <signal.h>
 #include <unistd.h>
 #include <syslog.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/file.h>
+#include <errno.h>
 
 /* included libraries */
 
@@ -16,12 +20,15 @@
 
 #define DEFAULT_CONFIG_PATH "../config/io_ext.ini"
 #define DAEMON_NAME "switcher"
+#define PID_FILE P_tmpdir"/switcher.pid"
 
 static struct mg_context* http_context = NULL;
 static i2c_config i2c_bus_config;
 static char *http_options[MAX_NUM_CONF] = { NULL };
+static FILE* stream_pid = NULL;
 
 static void signal_handler(int sig);
+static void daemonize(void);
 
 /*
  * Useful hints:
@@ -42,12 +49,10 @@ int main(int argc, char* argv[])
     ADD_OPTION_ELEMENT("listening_ports")
     ADD_OPTION_ELEMENT("8080")
 
-    openlog(DAEMON_NAME, LOG_PID, LOG_DAEMON);
-
     if (signal(SIGINT, signal_handler) == SIG_ERR || 
             signal(SIGTERM, signal_handler) == SIG_ERR)
     {
-        syslog(LOG_ERR, "Could not install signal handler for SIGINT.");
+        fprintf(stderr, "Could not install signal handler for SIGINT.\n");
         return 1;
     }
 
@@ -70,10 +75,18 @@ int main(int argc, char* argv[])
 
     if (parse_config(config_path, &i2c_bus_config) == EXIT_FAILURE)
     {
-        syslog(LOG_ERR, "Error parsing the configuration file.");
+        fprintf(stderr, "Error parsing the configuration file.\n");
         exit(EXIT_FAILURE);
     }
-    validate_config(&i2c_bus_config);
+    else if (validate_config(&i2c_bus_config) == EXIT_FAILURE)
+    {
+        fprintf(stderr, "Illegal configuration. Please check values.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    openlog(DAEMON_NAME, LOG_PID, LOG_DAEMON);
+
+    daemonize();
 
     if (i2c_init_fhs(&i2c_bus_config) == EXIT_FAILURE)
     {
@@ -85,7 +98,7 @@ int main(int argc, char* argv[])
 
     while (1)
     {
-        getchar();
+        sleep(10);
     }
 
     return 0;
@@ -100,6 +113,7 @@ static void signal_handler(int sig)
     {
         syslog(LOG_INFO, "Shutting down HTTP server.");
         stop_http_server(http_context);
+        http_context = NULL;
     }
 
     syslog(LOG_INFO, "Closing I2C filehandles.");
@@ -110,10 +124,88 @@ static void signal_handler(int sig)
         if (http_options[cnt] != NULL)
         {
             free(http_options[cnt]);
+            http_options[cnt] = NULL;
         }
+    }
+
+    if (NULL != stream_pid)
+    {
+        fclose(stream_pid);
+        stream_pid = NULL;
     }
 
     closelog();
 
     exit(ret);
+}
+
+static void daemonize(void)
+{
+    int cnt = -1;
+    pid_t pid;
+    int fh_pid = -1;
+    int rc = -1;
+
+    pid = fork();
+
+    if (pid < 0)
+    {
+        syslog(LOG_ERR, "Could not spawn daemon process. Stage 1.");
+        exit(EXIT_FAILURE);
+    }
+
+    if (pid > 0)
+    {
+        /* terminate parent process */
+        exit(EXIT_SUCCESS);
+    }
+
+    if (setsid() < 0)
+    {
+        syslog(LOG_ERR, "Daemon cannot become session leader.");
+        exit(EXIT_FAILURE);
+    }
+
+    /* ignore child spawning signals */
+    signal(SIGCHLD, SIG_IGN);
+    signal(SIGHUP, SIG_IGN);
+
+    pid = fork();
+
+    if (pid < 0)
+    {
+        syslog(LOG_ERR, "Could not spawn daemon process. Stage 2n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (pid > 0)
+    {
+        exit(EXIT_SUCCESS);
+    }
+
+    umask(0);
+
+    chdir("/");
+
+    for (cnt = sysconf(_SC_OPEN_MAX); cnt > 0; cnt--)
+    {
+        close(cnt);
+    }
+
+    fh_pid = open(PID_FILE, O_CREAT | O_RDWR, 0666);
+    rc = flock(fh_pid, LOCK_EX | LOCK_NB);
+    if (rc)
+    {
+        if (EWOULDBLOCK == errno)
+        {
+            syslog(LOG_ERR, "Quitting. There is already another instance running.");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    stream_pid = fdopen(fh_pid, "r+");
+    fprintf(stream_pid, "%d\n", getpid());
+    fflush(stream_pid);
+
+    syslog(LOG_ERR, "switcher daemon started.\n");
 }
