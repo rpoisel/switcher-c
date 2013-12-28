@@ -27,6 +27,7 @@ static struct mg_context* http_context = NULL;
 static i2c_config i2c_bus_config;
 static char *http_options[MAX_NUM_CONF] = { NULL };
 static FILE* stream_pid = NULL;
+static int fh_pid = -1;
 
 static void signal_handler(int sig);
 static void daemonize(void);
@@ -131,10 +132,15 @@ static void signal_handler(int sig)
 
     if (NULL != stream_pid)
     {
+        if (flock(fh_pid, LOCK_UN) != 0)
+        {
+            syslog(LOG_ERR, "Could not unlock PID file.");
+        }
         fclose(stream_pid);
         stream_pid = NULL;
     }
 
+    unlink(PID_FILE);
     closelog();
 
     exit(ret);
@@ -144,7 +150,6 @@ static void daemonize(void)
 {
     int cnt = -1;
     pid_t pid;
-    int fh_pid = -1;
     int rc = -1;
 
     pid = fork();
@@ -205,6 +210,11 @@ static void daemonize(void)
     }
 
     stream_pid = fdopen(fh_pid, "r+");
+    if (NULL == stream_pid)
+    {
+        syslog(LOG_ERR, "Could not create stream of PID file handle.");
+        exit(EXIT_FAILURE);
+    }
     fprintf(stream_pid, "%d\n", getpid());
     fflush(stream_pid);
 
