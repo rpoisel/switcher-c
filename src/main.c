@@ -21,6 +21,7 @@
 #define DEFAULT_CONFIG_PATH "../config/io_ext.ini"
 #define DAEMON_NAME "switcher"
 #define PID_FILE P_tmpdir"/switcher.pid"
+#define WORK_DIR "/"
 
 static struct mg_context* http_context = NULL;
 static i2c_config i2c_bus_config;
@@ -185,7 +186,7 @@ static void daemonize(void)
 
     umask(0);
 
-    chdir("/");
+    chdir(WORK_DIR);
 
     for (cnt = sysconf(_SC_OPEN_MAX); cnt > 0; cnt--)
     {
