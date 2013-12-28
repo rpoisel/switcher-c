@@ -35,6 +35,7 @@ static void daemonize(void);
 /*
  * Useful hints:
  *   * http://stackoverflow.com/questions/17954432/creating-a-daemon-in-linux
+ *   * http://stackoverflow.com/questions/5339200/how-to-create-a-single-instance-application-in-c
  */
 
 int main(int argc, char* argv[]) 
