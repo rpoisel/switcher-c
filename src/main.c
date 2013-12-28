@@ -123,7 +123,7 @@ static void signal_handler(int sig)
 
     for (cnt = 0; cnt < MAX_NUM_CONF; cnt++)
     {
-        if (http_options[cnt] != NULL)
+        if (NULL != http_options[cnt])
         {
             free(http_options[cnt]);
             http_options[cnt] = NULL;
