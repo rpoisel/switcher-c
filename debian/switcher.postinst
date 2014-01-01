@@ -1,0 +1,25 @@
+#!/bin/sh
+
+set -e
+
+#if [ -x /etc/init.d/switcher ]; then
+#   update-rc.d switcher defaults 15 85 >/dev/null
+#
+#   if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ]; then
+#      if [ -e /var/run/switcher/switcher.pid ]; then
+#          ACTION=restart
+#      else
+#          ACTION=start
+#      fi
+#
+#      if [ -x /usr/sbin/invoke-rc.d ] ; then
+#         invoke-rc.d switcher $ACTION || true
+#      else
+#         /etc/init.d/switcher $ACTION || true
+#      fi
+#   fi
+#fi
+
+#DEBHELPER#
+
+exit 0

@@ -1,6 +1,8 @@
 CC := gcc
-CFLAGS := -W -Wall -I.. -DNO_SSL -DNO_CGI -g -pipe
-LDFLAGS := -pthread -ldl
+CFLAGS := $(shell dpkg-buildflags --get CFLAGS) \
+    -W -Wall -I.. -DNO_SSL -DNO_CGI -g -pipe
+LDFLAGS := $(shell dpkg-buildflags --get LDFLAGS) \
+    -pthread
 RM := rm
 
 BIN := switcher

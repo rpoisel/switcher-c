@@ -1,0 +1,30 @@
+Source: switcher
+Section: embedded
+Priority: optional
+Maintainer: Rainer Poisel <rainer.poisel@gmail.com>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.4
+#Homepage: http://www.digitalforensics.at
+#Vcs-Git: git://git.debian.org/collab-maint/fredi-0.2.git
+#Vcs-Browser: http://git.debian.org/?p=collab-maint/fredi-0.2.git;a=summary
+
+Package: switcher
+Architecture: amd64
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: This is a program that ...
+ Lorem ipsum dolor, 
+ .
+ Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+ Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,
+ when an unknown printer took a galley of type and scrambled it to make a type
+ specimen book. It has survived not only five centuries, but also the leap into
+ electronic typesetting, remaining essentially unchanged. It was popularised in
+ the 1960s with the release of Letraset sheets containing Lorem Ipsum passages,
+ and more recently with desktop publishing software like Aldus PageMaker
+ including versions of Lorem Ipsum.
+
+#Package: mmc-doc
+#Section: doc
+#Architecture: all
+#Description: Documentation for MMC
+# Bla, I'm the documentation. You want more?

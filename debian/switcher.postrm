@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+
+#if [ purge = "$1" ]; then
+#   update-rc.d switcher remove >/dev/null
+#fi
+
+#DEBHELPER#
+
+exit 0
