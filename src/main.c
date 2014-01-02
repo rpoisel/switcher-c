@@ -20,7 +20,7 @@
 
 #define DEFAULT_CONFIG_PATH "../config/io_ext.ini"
 #define DAEMON_NAME "switcher"
-#define PID_FILE P_tmpdir"/switcher.pid"
+#define PID_FILE "/var/run/switcher/switcher.pid"
 #define WORK_DIR "/"
 
 static struct mg_context* http_context = NULL;

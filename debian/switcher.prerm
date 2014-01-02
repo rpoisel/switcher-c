@@ -1,14 +1,6 @@
 #!/bin/sh
 set -e
 
-if [ "$1" = "remove" ]; then
-  if [ -x /usr/sbin/invoke-rc.d ] ; then
-      invoke-rc.d switcher stop || true
-  else
-      /etc/init.d/switcher stop || true
-  fi
-fi
-
 #DEBHELPER#
 
 exit 0

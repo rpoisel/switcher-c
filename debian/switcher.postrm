@@ -1,9 +1,11 @@
 #!/bin/sh
 set -e
 
-#if [ purge = "$1" ]; then
-#   update-rc.d switcher remove >/dev/null
-#fi
+if [ "$1" = "purge" ]; then
+    # logs have to be removed according to policy.
+    rm -rf /var/log/switcher/
+    rm -rf /var/run/switcher/
+fi
 
 #DEBHELPER#
 

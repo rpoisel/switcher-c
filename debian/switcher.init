@@ -17,10 +17,9 @@
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
 DESC="Switcher IO Extension"
 NAME=switcher
-#DAEMON=/usr/sbin/$NAME
-DAEMON=/home/rpoisel/git/switcher-c/src/$NAME
-DAEMON_ARGS="-c /home/rpoisel/git/switcher-c/config/io_ext.ini"
-PIDFILE=/tmp/$NAME.pid
+DAEMON=/usr/bin/$NAME
+DAEMON_ARGS="-c /etc/switcher/io_ext.ini"
+PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
 
 # Exit if the package is not installed
