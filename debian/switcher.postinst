@@ -6,6 +6,65 @@ set -e
 uid=`getent passwd switcher | cut -d ":" -f 3`
 home=`getent passwd switcher | cut -d ":" -f 6`
 
+if [ "$uid" ]
+then
+    if [ "$home" = "/var/lib/switcher" ]; then
+        :
+        #echo "switcher homedir check: ok"
+    else
+        echo "ERROR: switcher account has an unexpected home directory!"
+        echo "It should be '/var/lib/switcher', but it is '$home'."
+        echo "Removing the switcher user might fix this, but the question"
+        echo "remains how you got into this mess to begin with."
+        exit 1
+    fi
+
+else
+    adduser --quiet \
+        --system \
+        --disabled-password \
+        --home /var/lib/switcher \
+        --no-create-home \
+        --shell /bin/false \
+        --group \
+        switcher
+fi
+
+for i in lib log; do
+    if ! [ -d "/var/$i/switcher" ]
+    then
+        echo "Something or somebody made /var/$i/switcher disappear."
+        echo "Creating one for you again."
+        mkdir "/var/$i/switcher"
+    fi
+done
+
+chown switcher:switcher /var/lib/switcher
+chmod 02700 /var/lib/switcher
+
+if [ -e /var/run/switcher ]; then
+    chown switcher:switcher /var/run/switcher
+    chmod 02750 /var/run/switcher
+fi
+
+chown switcher:switcher /var/log/switcher
+chmod 02750 /var/log/switcher
+
+# make sure that i2c-dev gets loaded every system start
+if grep -q i2c-dev /etc/modules
+then
+    :
+    #echo "i2c-dev already gets loaded every system start"
+else
+    cat "i2c-dev" >> /etc/modules
+    touch /var/log/switcher/i2c-dev.added
+fi
+
+# create udev rules
+cat > /etc/udev/rules.d/99-i2c.rules <<HERE
+KERNEL=="i2c-[0-9]*", MODE="660", OWNER="switcher", GROUP="switcher"
+HERE
+
 #DEBHELPER#
 
 exit 0

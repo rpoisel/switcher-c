@@ -2,9 +2,23 @@
 set -e
 
 if [ "$1" = "purge" ]; then
+    # remove i2c-dev module from modules to get loaded
+    # in case it has been added by this installer
+    if [ -e "/var/log/switcher/i2c-dev.added" ]
+    then
+        tmp=`tempfile`
+        grep -v i2c-dev /etc/modules > ${tmp}
+        mv ${tmp} /etc/modules
+    fi
+
+    # remove udev rules
+    rm -f /etc/udev/rules.d/99-i2c.rules
+
     # logs have to be removed according to policy.
-    rm -rf /var/log/switcher/
-    rm -rf /var/run/switcher/
+    for i in lib log run
+    do
+        rm -rf /var/"${i}"/switcher/
+    done
 fi
 
 #DEBHELPER#

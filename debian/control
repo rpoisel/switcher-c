@@ -10,7 +10,7 @@ Standards-Version: 3.9.4
 
 Package: switcher
 Architecture: amd64
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, udev, adduser
 Description: This is a program that ...
  Lorem ipsum dolor, 
  .
