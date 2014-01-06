@@ -65,6 +65,10 @@ cat > /etc/udev/rules.d/99-i2c.rules <<HERE
 KERNEL=="i2c-[0-9]*", MODE="660", OWNER="switcher", GROUP="switcher"
 HERE
 
+# make service usable immediately
+modprobe i2c-dev
+invoke-rc.d udev restart
+
 #DEBHELPER#
 
 exit 0
