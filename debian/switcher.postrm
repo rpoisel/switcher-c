@@ -14,15 +14,23 @@ if [ "$1" = "purge" ]; then
     # remove udev rules
     rm -f /etc/udev/rules.d/99-i2c.rules
 
+    # remove user and group
+    deluser --remove-home switcher
+
+    # restore original state: module (un)loaded
+    rmmod i2c-dev
+    invoke-rc.d udev restart
+    if [ -e "/var/log/switcher/i2c-dev.loaded" ]
+    then
+        modprobe i2c-dev
+    fi
+
     # logs have to be removed according to policy.
     for i in lib log run
     do
         rm -rf /var/"${i}"/switcher/
     done
 
-    # remove user and group
-    deluser --remove-home switcher
-    delgroup switcher
 fi
 
 #DEBHELPER#

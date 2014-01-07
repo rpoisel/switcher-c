@@ -33,8 +33,6 @@ fi
 for i in lib log; do
     if ! [ -d "/var/$i/switcher" ]
     then
-        echo "Something or somebody made /var/$i/switcher disappear."
-        echo "Creating one for you again."
         mkdir "/var/$i/switcher"
     fi
 done
@@ -56,18 +54,23 @@ then
     :
     #echo "i2c-dev already gets loaded every system start"
 else
-    cat "i2c-dev" >> /etc/modules
+    echo "i2c-dev" >> /etc/modules
     touch /var/log/switcher/i2c-dev.added
 fi
 
 # create udev rules
 cat > /etc/udev/rules.d/99-i2c.rules <<HERE
-KERNEL=="i2c-[0-9]*", MODE="660", OWNER="switcher", GROUP="switcher"
+KERNEL=="i2c-[0-9]*", MODE="666", OWNER="switcher", GROUP="switcher"
 HERE
 
 # make service usable immediately
-modprobe i2c-dev
+if lsmod | grep -q i2c_dev
+then
+    touch /var/log/switcher/i2c-dev.loaded
+    rmmod i2c-dev
+fi
 invoke-rc.d udev restart
+modprobe i2c-dev
 
 #DEBHELPER#
 
