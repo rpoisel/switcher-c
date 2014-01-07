@@ -69,7 +69,7 @@ then
     touch /var/log/switcher/i2c-dev.loaded
     rmmod i2c-dev
 fi
-invoke-rc.d udev restart
+invoke-rc.d udev reload
 modprobe i2c-dev
 
 #DEBHELPER#

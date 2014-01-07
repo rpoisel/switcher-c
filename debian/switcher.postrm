@@ -19,7 +19,7 @@ if [ "$1" = "purge" ]; then
 
     # restore original state: module (un)loaded
     rmmod i2c-dev
-    invoke-rc.d udev restart
+    invoke-rc.d udev reload
     if [ -e "/var/log/switcher/i2c-dev.loaded" ]
     then
         modprobe i2c-dev
