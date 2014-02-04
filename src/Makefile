@@ -6,15 +6,7 @@ LDFLAGS := $(shell dpkg-buildflags --get LDFLAGS) \
 RM := rm
 
 BIN := switcher
-OBJ := \
-    	main.o \
-	mongoose.o \
-	ini.o \
-	parse_i2c.o \
-	http.o \
-	i2c.o \
-	i2c_io.o \
-	pcf8574.o \
+OBJ := $(patsubst %.c,%.o,$(wildcard *.c))
 
 
 all: $(BIN)
