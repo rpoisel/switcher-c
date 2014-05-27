@@ -15,8 +15,8 @@
 /* own functions */
 #include "parse_config.h"
 #include "http.h"
-#include "i2c.h"
 #include "i2c_io.h"
+#include "i2c.h"
 
 #define DEFAULT_CONFIG_PATH "../config/io_ext.ini"
 #define DAEMON_NAME "switcher"

@@ -10,6 +10,8 @@
 /* own includes */
 #include "http.h"
 
+#include "i2c_io.h"
+
 #define BUF_LEN 1024
 #define URI_DELIM "/"
 

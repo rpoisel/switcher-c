@@ -3,8 +3,6 @@
 
 #include <stdint.h>
 
-#include "i2c_io_fwd.h"
-
 #define MAX_I2C_BUSSES 8
 #define MAX_IO_DEVICES 128
 
@@ -18,7 +16,7 @@ typedef enum
     CMD_READ,
 } i2c_cmd;
 
-typedef struct
+typedef struct io_drv
 {
     /* init device */
     uint32_t (*init)(void* init_value);
@@ -34,15 +32,15 @@ typedef struct
         int (*cb_error)(char* error_msg, char* buf, int buf_size),
         char* buf_msg,
         int buf_size_msg);
-} i2c_drv;
+} io_drv;
 
-typedef struct
+typedef struct i2c_io
 {
     uint8_t address;
-    i2c_drv* drv_handle;
+    io_drv* drv_handle;
 } i2c_io;
 
-typedef struct
+typedef struct i2c_bus
 {
     unsigned num_devices;
     i2c_io devices[MAX_IO_DEVICES];
@@ -50,13 +48,13 @@ typedef struct
     int fh;
 } i2c_bus;
 
-struct i2c_cfg
+typedef struct i2c_config
 {
     unsigned num_busses;
     i2c_bus busses[MAX_I2C_BUSSES];
-};
+} i2c_config;
 
-typedef struct
+typedef struct i2c_data
 {
     unsigned idx_bus;
     unsigned idx_dev;

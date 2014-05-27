@@ -16,7 +16,7 @@ static int pcf8574_read(int fh, uint8_t address, uint32_t* value,
         char* buf_msg,
         int buf_size_msg);
 
-static i2c_drv handle = {
+static io_drv handle = {
     .init = &pcf8574_init, 
     .read = &pcf8574_read,
     .write = &pcf8574_write
@@ -50,7 +50,7 @@ static int pcf8574_read(int fh, uint8_t address, uint32_t* value,
     return result;
 }
 
-i2c_drv* get_pcf8574_drv()
+io_drv* get_pcf8574_drv()
 {
     return &handle;
 }

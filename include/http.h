@@ -5,7 +5,7 @@
 #include "mongoose.h"
 
 /* own includes */
-#include "i2c_io.h"
+#include "i2c_io_fwd.h"
 
 #define MAX_NUM_CONF 128
 #define STR_CONF_LEN 256
