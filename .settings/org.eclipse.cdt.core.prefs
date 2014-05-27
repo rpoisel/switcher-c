@@ -1,0 +1,11 @@
+eclipse.preferences.version=1
+environment/project/0.2058322444.108243205/CC/delimiter=\:
+environment/project/0.2058322444.108243205/CC/operation=append
+environment/project/0.2058322444.108243205/CC/value=arm-unknown-linux-gnueabi-gcc
+environment/project/0.2058322444.108243205/PATH/delimiter=\:
+environment/project/0.2058322444.108243205/PATH/operation=replace
+environment/project/0.2058322444.108243205/PATH/value=/usr/local/bin\:/usr/bin\:/bin\:/usr/local/games\:/usr/games\:/usr/local/sbin\:/usr/sbin\:/sbin\:/usr/lib/jvm/java-6-sun/bin\:/usr/local/groovy/bin\:/usr/local/apache-ant/bin\:/usr/local/skype\:/usr/local/lame/bin\:/usr/local/mutt/bin\:/usr/local/eclipse\:/usr/local/VirtualBox_OSE\:/usr/local/qemu/bin\:/usr/local/netbeans/bin\:/usr/local/node/bin\:/usr/lib/git-core\:/usr/local/crosstool-ng/bin\:${PATH}\:/usr/local/toolchains/arm-unknown-linux-gnueabi/bin
+environment/project/0.2058322444.108243205/append=true
+environment/project/0.2058322444.108243205/appendContributed=true
+environment/project/0.2058322444/append=true
+environment/project/0.2058322444/appendContributed=true
