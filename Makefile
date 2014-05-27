@@ -1,4 +1,5 @@
 RM := rm
+STRIP := strip
 
 BIN := switcher
 DIR_SRC := src
@@ -11,19 +12,20 @@ CFLAGS := $(shell dpkg-buildflags --get CFLAGS) \
 LDFLAGS := $(shell dpkg-buildflags --get LDFLAGS) \
     -pthread
 
-all: CFLAGS += -O2
-all: $(BIN)
+all: release
 
-debug: CFLAGS += -g -O0
+release: debug
+	$(CC_PREFIX)$(STRIP) -s $(BIN)
+
 debug: $(BIN)
 
 %.o: %.c
-	$(CC) $(CFLAGS) -o $@ $<
+	$(CC_PREFIX)$(CC) $(CFLAGS) -o $@ $<
 
 $(BIN): $(OBJ)
-	$(CC) $(LDFLAGS) -o $(BIN) $(OBJ)
+	$(CC_PREFIX)$(CC) $(LDFLAGS) -o $(BIN) $(OBJ)
 
-.PHONY: clean all debug
+.PHONY: clean all debug release
 
 clean:
 	-$(RM) $(BIN) $(OBJ)

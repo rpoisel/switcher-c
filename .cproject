@@ -80,10 +80,10 @@
 		<configuration configurationName="Default">
 			<resource resourceType="PROJECT" workspacePath="/switcher-c"/>
 		</configuration>
+		<configuration configurationName="Debug"/>
 		<configuration configurationName="Raspbian Cross">
 			<resource resourceType="PROJECT" workspacePath="/switcher-c"/>
 		</configuration>
-		<configuration configurationName="Debug"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 	<storageModule moduleId="scannerConfiguration">
@@ -99,16 +99,15 @@
 		<buildTargets>
 			<target name="debug" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
 				<buildCommand>make</buildCommand>
-				<buildArguments/>
 				<buildTarget>debug</buildTarget>
 				<stopOnError>true</stopOnError>
 				<useDefaultCommand>true</useDefaultCommand>
 				<runAllBuilders>true</runAllBuilders>
 			</target>
-			<target name="all" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+			<target name="release" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
 				<buildCommand>make</buildCommand>
 				<buildArguments/>
-				<buildTarget>all</buildTarget>
+				<buildTarget>release</buildTarget>
 				<stopOnError>true</stopOnError>
 				<useDefaultCommand>true</useDefaultCommand>
 				<runAllBuilders>true</runAllBuilders>
