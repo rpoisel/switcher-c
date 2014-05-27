@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#include "i2c_io_fwd.h"
+
 #define MAX_I2C_BUSSES 8
 #define MAX_IO_DEVICES 128
 
@@ -48,11 +50,11 @@ typedef struct
     int fh;
 } i2c_bus;
 
-typedef struct
+struct i2c_cfg
 {
     unsigned num_busses;
     i2c_bus busses[MAX_I2C_BUSSES];
-} i2c_config;
+};
 
 typedef struct
 {
