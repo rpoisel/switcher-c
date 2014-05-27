@@ -5,7 +5,7 @@
 
 #include "ini.h"
 
-#include "parse_i2c.h"
+#include "parse_config.h"
 #include "i2c_io.h"
 #include "pcf8574.h"
 
@@ -85,7 +85,7 @@ static int parser_handler(void* user, const char* section, const char* name,
     current_bus->num_devices = user_data->current_dev_id + 1;
     current_bus->fh = -1;
 
-#if 0
+#if 1
     printf("Section: %s, Name: %s, Value: %s\n", section, name, value);
 #endif
 

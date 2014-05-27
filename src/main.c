@@ -13,7 +13,7 @@
 /* included libraries */
 
 /* own functions */
-#include "parse_i2c.h"
+#include "parse_config.h"
 #include "http.h"
 #include "i2c.h"
 #include "i2c_io.h"
