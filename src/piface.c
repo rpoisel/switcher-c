@@ -13,20 +13,15 @@
 #include "piface.h"
 
 static int piface_write(int fh, uint8_t address, const uint32_t* value,
-        int (*cb_error)(char* error_msg, char* buf, int buf_size),
-        char* buf_msg,
-        int buf_size_msg);
+		int (*cb_error)(char* error_msg, char* buf, int buf_size),
+		char* buf_msg, int buf_size_msg);
 static uint32_t piface_init(void* init_value);
 static int piface_read(int fh, uint8_t address, uint32_t* value,
-        int (*cb_error)(char* error_msg, char* buf, int buf_size),
-        char* buf_msg,
-        int buf_size_msg);
+		int (*cb_error)(char* error_msg, char* buf, int buf_size),
+		char* buf_msg, int buf_size_msg);
 
-static io_drv handle = {
-    .init = &piface_init,
-    .read = &piface_read,
-    .write = &piface_write
-};
+static io_drv handle =
+{ .init = &piface_init, .read = &piface_read, .write = &piface_write };
 
 io_drv* get_piface_drv()
 {
@@ -34,9 +29,8 @@ io_drv* get_piface_drv()
 }
 
 static int piface_write(int fh, uint8_t address, const uint32_t* value,
-        int (*cb_error)(char* error_msg, char* buf, int buf_size),
-        char* buf_msg,
-        int buf_size_msg)
+		int (*cb_error)(char* error_msg, char* buf, int buf_size),
+		char* buf_msg, int buf_size_msg)
 {
 	return 0;
 }
@@ -47,9 +41,8 @@ static uint32_t piface_init(void* init_value)
 }
 
 static int piface_read(int fh, uint8_t address, uint32_t* value,
-        int (*cb_error)(char* error_msg, char* buf, int buf_size),
-        char* buf_msg,
-        int buf_size_msg)
+		int (*cb_error)(char* error_msg, char* buf, int buf_size),
+		char* buf_msg, int buf_size_msg)
 {
 	return 0;
 }

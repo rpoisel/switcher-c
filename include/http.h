@@ -11,7 +11,7 @@
 #define STR_CONF_LEN 256
 
 struct mg_context* start_http_server(const char *http_options[],
-        io_config* us_config);
+		io_config* us_config);
 
 int stop_http_server(struct mg_context* context);
 

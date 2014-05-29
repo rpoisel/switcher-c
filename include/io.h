@@ -11,67 +11,61 @@
 
 typedef enum io_cmd
 {
-    CMD_NONE,
-    CMD_WRITE,
-    CMD_READ,
+	CMD_NONE, CMD_WRITE, CMD_READ,
 } io_cmd;
 
 typedef enum bus_type
 {
-	BUS_I2C,
-	BUS_PIFACE
+	BUS_I2C, BUS_PIFACE
 } bus_type;
 
 typedef struct io_drv
 {
-    /* init device */
-    uint32_t (*init)(void* init_value);
+	/* init device */
+	uint32_t (*init)(void* init_value);
 
-    /* read IOs */
-    int (*read)(int fh, uint8_t address, uint32_t* value,
-        int (*cb_error)(char* error_msg, char* buf, int buf_size),
-        char* buf_msg,
-        int buf_size_msg);
+	/* read IOs */
+	int (*read)(int fh, uint8_t address, uint32_t* value,
+			int (*cb_error)(char* error_msg, char* buf, int buf_size),
+			char* buf_msg, int buf_size_msg);
 
-    /* write IOs */
-    int (*write)(int fh, uint8_t address, const uint32_t* value,
-        int (*cb_error)(char* error_msg, char* buf, int buf_size),
-        char* buf_msg,
-        int buf_size_msg);
+	/* write IOs */
+	int (*write)(int fh, uint8_t address, const uint32_t* value,
+			int (*cb_error)(char* error_msg, char* buf, int buf_size),
+			char* buf_msg, int buf_size_msg);
 } io_drv;
 
 typedef struct io_dev
 {
-    uint8_t address;
-    io_drv* drv_handle;
+	uint8_t address;
+	io_drv* drv_handle;
 } io_dev;
 
 typedef struct io_bus
 {
 	bus_type type;
-    unsigned num_devices;
-    io_dev devices[MAX_IO_DEVICES];
-    char param_0[MAX_PARAM_LEN];
-    int fh;
+	unsigned num_devices;
+	io_dev devices[MAX_IO_DEVICES];
+	char param_0[MAX_PARAM_LEN];
+	int fh;
 } io_bus;
 
 typedef struct io_config
 {
-    unsigned num_busses;
-    io_bus busses[MAX_BUSSES];
+	unsigned num_busses;
+	io_bus busses[MAX_BUSSES];
 } io_config;
 
 typedef struct io_data
 {
-    unsigned idx_bus;
-    unsigned idx_dev;
-    uint32_t value;
+	unsigned idx_bus;
+	unsigned idx_dev;
+	uint32_t value;
 } io_data;
 
 int perform_io(io_config* config, io_data* data, io_cmd cmd,
-        int (*cb_success)(io_data* data, char* buf, int buf_size),
-        int (*cb_error)(char* error_msg, char* buf, int buf_size),
-        char* buf,
-        int buf_size);
+		int (*cb_success)(io_data* data, char* buf, int buf_size),
+		int (*cb_error)(char* error_msg, char* buf, int buf_size), char* buf,
+		int buf_size);
 
 #endif /* IO_H_ */
