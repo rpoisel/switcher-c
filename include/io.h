@@ -16,7 +16,7 @@ typedef enum io_cmd
 
 typedef enum bus_type
 {
-	BUS_I2C, BUS_PIFACE
+	BUS_NONE, BUS_I2C, BUS_PIFACE
 } bus_type;
 
 typedef struct io_drv
@@ -33,6 +33,9 @@ typedef struct io_drv
 	int (*write)(int fh, uint8_t address, const uint32_t* value,
 			int (*cb_error)(char* error_msg, char* buf, int buf_size),
 			char* buf_msg, int buf_size_msg);
+
+	/* deinit device */
+	uint32_t (*deinit)(void* deinit_value);
 } io_drv;
 
 typedef struct io_dev
@@ -67,5 +70,9 @@ int perform_io(io_config* config, io_data* data, io_cmd cmd,
 		int (*cb_success)(io_data* data, char* buf, int buf_size),
 		int (*cb_error)(char* error_msg, char* buf, int buf_size), char* buf,
 		int buf_size);
+
+int conf_init(io_config* config);
+int io_init(io_config* config);
+int io_deinit(io_config* config);
 
 #endif /* IO_H_ */

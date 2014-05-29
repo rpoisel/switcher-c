@@ -20,6 +20,7 @@
 #define INI_BUS_PARAM_0 "bus_parameter_0"
 #define INI_DEV_ADR "address"
 #define INI_DRV_PCF8574 "pcf8574"
+#define INI_DRV_PIFACE "piface"
 
 typedef struct
 {
@@ -48,7 +49,7 @@ static void update_user_data(bus_configs* user_data, const char* section)
 	user_data->config->num_busses = user_data->current_bus_id + 1;
 }
 
-static int process_entries(io_bus* current_bus, io_dev* current_io,
+static int process_entries(io_bus* current_bus, io_dev* current_dev,
 		const char* name, const char* value)
 {
 	if (strncmp(name, INI_BUS_PARAM_0, MAX_INI_ENTRY_LEN) == 0)
@@ -60,7 +61,6 @@ static int process_entries(io_bus* current_bus, io_dev* current_io,
 		if (strncmp(value, INI_BUS_TYPE_PIFACE, MAX_PARAM_LEN) == 0)
 		{
 			current_bus->type = BUS_PIFACE;
-			current_io->drv_handle = get_piface_drv();
 		}
 		else
 		{
@@ -71,12 +71,17 @@ static int process_entries(io_bus* current_bus, io_dev* current_io,
 	{
 		if (strncmp(value, INI_DRV_PCF8574, MAX_INI_ENTRY_LEN) == 0)
 		{
-			current_io->drv_handle = get_pcf8574_drv();
+			current_dev->drv_handle = get_pcf8574_drv();
 		}
+		else if (strncmp(value, INI_DRV_PIFACE, MAX_INI_ENTRY_LEN) == 0)
+		{
+			current_dev->drv_handle = get_piface_drv();
+		}
+		current_bus->num_devices += 1;
 	}
 	else if (strncmp(name, INI_DEV_ADR, MAX_INI_ENTRY_LEN) == 0)
 	{
-		current_io->address = strtol(value, NULL, 16);
+		current_dev->address = strtol(value, NULL, 16);
 	}
 	else
 	{
@@ -97,16 +102,15 @@ static int parser_handler(void* user, const char* section, const char* name,
 	update_user_data(user_data, section);
 
 	io_bus* current_bus = user_data->config->busses + user_data->current_bus_id;
-	io_dev* current_io = current_bus->devices + user_data->current_dev_id;
+	io_dev* current_dev = current_bus->devices + user_data->current_dev_id;
 
-	current_bus->num_devices = user_data->current_dev_id + 1;
-	current_bus->fh = -1;
+	/* current_bus->num_devices = user_data->current_dev_id + 1; */
 
 #if 1
 	printf("Section: %s, Name: %s, Value: %s\n", section, name, value);
 #endif
 
-	return process_entries(current_bus, current_io, name, value);
+	return process_entries(current_bus, current_dev, name, value);
 }
 
 int validate_config(io_config* bus_config)

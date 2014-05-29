@@ -5,9 +5,6 @@
 
 #include "io_fwd.h"
 
-int i2c_init_fhs(io_config* config);
-int i2c_close_fhs(io_config* config);
-
 int i2c_write(int fh, uint8_t address, void* buf, size_t buf_size,
 		int (*cb_error)(char* error_msg, char* buf, int buf_size),
 		char* buf_msg, int buf_size_msg);

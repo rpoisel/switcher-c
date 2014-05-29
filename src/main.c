@@ -19,7 +19,7 @@
 #include "io.h"
 #include "io_i2c.h"
 
-#define DEFAULT_CONFIG_PATH "../config/io_ext.ini"
+#define DEFAULT_CONFIG_PATH "config/io_ext.ini"
 #define DAEMON_NAME "switcher"
 #define PID_FILE "/var/run/switcher/switcher.pid"
 #define WORK_DIR "/"
@@ -45,6 +45,7 @@ int main(int argc, char* argv[])
 	int option = -1;
 	char config_path[STR_CONF_LEN];
 	int cnt_option = 0;
+	uint8_t run_as_daemon = 0;
 
 #define ADD_OPTION_ELEMENT(option) \
     http_options[cnt_option] = (char*)malloc(STR_CONF_LEN); \
@@ -62,7 +63,7 @@ int main(int argc, char* argv[])
 	}
 
 	strncpy(config_path, DEFAULT_CONFIG_PATH, STR_CONF_LEN);
-	while ((option = getopt(argc, argv, "hc:p:")) != -1)
+	while ((option = getopt(argc, argv, "hc:p:d")) != -1)
 	{
 		switch (option)
 		{
@@ -72,11 +73,21 @@ int main(int argc, char* argv[])
 		case 'p':
 			strncpy(http_options[1], optarg, STR_CONF_LEN);
 			break;
+		case 'd':
+			run_as_daemon = 1;
+			break;
 		default:
 			fprintf(stderr, "Usage: %s [-h] [-c config-file] [-p port]\n",
 					argv[0]);
 			exit(EXIT_FAILURE);
 		}
+	}
+
+	if (conf_init(&bus_config) == EXIT_FAILURE)
+	{
+		fprintf(stderr,
+				"Error initializing the bus configuration data structure.\n");
+		exit(EXIT_FAILURE);
 	}
 
 	if (parse_config(config_path, &bus_config) == EXIT_FAILURE)
@@ -92,11 +103,14 @@ int main(int argc, char* argv[])
 
 	openlog(DAEMON_NAME, LOG_PID, LOG_DAEMON);
 
-	daemonize();
-
-	if (i2c_init_fhs(&bus_config) == EXIT_FAILURE)
+	if (run_as_daemon)
 	{
-		syslog(LOG_ERR, "Could not open I2C device files.");
+		daemonize();
+	}
+
+	if (io_init(&bus_config) == EXIT_FAILURE)
+	{
+		syslog(LOG_ERR, "Could not initialize IO subsystem.");
 		exit(EXIT_FAILURE);
 	}
 
@@ -107,7 +121,7 @@ int main(int argc, char* argv[])
 		sleep(10);
 	}
 
-	return 0;
+	return EXIT_FAILURE; /* should never be reached */
 }
 
 static void signal_handler(int sig)
@@ -122,8 +136,8 @@ static void signal_handler(int sig)
 		http_context = NULL;
 	}
 
-	syslog(LOG_INFO, "Closing I2C filehandles.");
-	i2c_close_fhs(&bus_config);
+	syslog(LOG_INFO, "Shutting down IO subsystem.");
+	io_deinit(&bus_config);
 
 	for (cnt = 0; cnt < MAX_NUM_CONF; cnt++)
 	{

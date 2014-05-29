@@ -1,7 +1,4 @@
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <sys/ioctl.h>
-#include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -20,44 +17,6 @@ static int i2c_ioop(int fh, uint8_t address, void* buf, size_t buf_size,
 		int (*cb_error)(char* error_msg, char* buf, int buf_size),
 		char* buf_msg, int buf_size_msg);
 
-int i2c_init_fhs(io_config* config)
-{
-	unsigned cnt = 0;
-
-	for (cnt = 0; cnt < config->num_busses; cnt++)
-	{
-		io_bus* current_bus = config->busses + cnt;
-		if (current_bus->type == BUS_I2C)
-		{
-			current_bus->fh = open(current_bus->param_0, O_RDWR);
-			if (current_bus->fh == -1)
-			{
-				return EXIT_FAILURE;
-			}
-		}
-	}
-
-	return EXIT_SUCCESS;
-}
-
-int i2c_close_fhs(io_config* config)
-{
-	unsigned cnt = 0;
-
-	for (cnt = 0; cnt < config->num_busses; cnt++)
-	{
-		io_bus* current_bus = config->busses + cnt;
-		if (current_bus->type == BUS_I2C)
-		{
-			if (close(current_bus->fh) == -1)
-			{
-				return EXIT_FAILURE;
-			}
-		}
-	}
-
-	return EXIT_SUCCESS;
-}
 
 int i2c_write(int fh, uint8_t address, void* buf, size_t buf_size,
 		int (*cb_error)(char* error_msg, char* buf, int buf_size),
