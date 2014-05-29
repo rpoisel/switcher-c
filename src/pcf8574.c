@@ -5,7 +5,6 @@
 #include "io.h"
 #include "pcf8574.h"
 
-    /* write IOs */
 static int pcf8574_write(int fh, uint8_t address, const uint32_t* value,
         int (*cb_error)(char* error_msg, char* buf, int buf_size),
         char* buf_msg,
