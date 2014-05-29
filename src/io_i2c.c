@@ -28,10 +28,13 @@ int i2c_init_fhs(io_config* config)
     for (cnt = 0; cnt < config->num_busses; cnt++)
     {
         io_bus* current_bus = config->busses + cnt;
-        current_bus->fh = open(current_bus->dev_file, O_RDWR);
-        if (current_bus->fh == -1)
+        if (current_bus->type == BUS_I2C)
         {
-            return EXIT_FAILURE;
+            current_bus->fh = open(current_bus->param_0, O_RDWR);
+            if (current_bus->fh == -1)
+            {
+                return EXIT_FAILURE;
+            }
         }
     }
 
@@ -45,9 +48,12 @@ int i2c_close_fhs(io_config* config)
     for (cnt = 0; cnt < config->num_busses; cnt++)
     {
         io_bus* current_bus = config->busses + cnt;
-        if (close(current_bus->fh) == -1)
+        if (current_bus->type == BUS_I2C)
         {
-            return EXIT_FAILURE;
+        	if (close(current_bus->fh) == -1)
+            {
+                return EXIT_FAILURE;
+            }
         }
     }
 

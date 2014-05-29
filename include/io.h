@@ -18,8 +18,8 @@ typedef enum io_cmd
 
 typedef enum bus_type
 {
-	I2C,
-	PIFACE
+	BUS_I2C,
+	BUS_PIFACE
 } bus_type;
 
 typedef struct io_drv
@@ -51,7 +51,7 @@ typedef struct io_bus
 	bus_type type;
     unsigned num_devices;
     io_dev devices[MAX_IO_DEVICES];
-    char dev_file[MAX_PARAM_LEN];
+    char param_0[MAX_PARAM_LEN];
     int fh;
 } io_bus;
 

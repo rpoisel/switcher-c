@@ -8,12 +8,16 @@
 #include "parse_config.h"
 #include "io.h"
 #include "pcf8574.h"
+#include "piface.h"
 
 #define MAX_INI_ENTRY_LEN 128
 #define INI_BUS "bus"
+#define INI_BUS_TYPE "bus_type"
+#define INI_BUS_TYPE_I2C "i2c"
+#define INI_BUS_TYPE_PIFACE "piface"
 #define INI_DEV "device"
 #define INI_DEV_DRV "devdrv"
-#define INI_DEV_FILE "bus_parameter_0"
+#define INI_BUS_PARAM_0 "bus_parameter_0"
 #define INI_DEV_ADR "address"
 #define INI_DRV_PCF8574 "pcf8574"
 
@@ -46,9 +50,21 @@ static void update_user_data(bus_configs* user_data, const char* section)
 
 static int process_entries(io_bus* current_bus, io_dev* current_io, const char* name, const char* value)
 {
-    if (strncmp(name, INI_DEV_FILE, MAX_INI_ENTRY_LEN) == 0)
+    if (strncmp(name, INI_BUS_PARAM_0, MAX_INI_ENTRY_LEN) == 0)
     {
-        strncpy(current_bus->dev_file, value, MAX_PARAM_LEN);
+        strncpy(current_bus->param_0, value, MAX_PARAM_LEN);
+    }
+    else if (strncmp(name, INI_BUS_TYPE, MAX_INI_ENTRY_LEN) == 0)
+    {
+    	if (strncmp(value, INI_BUS_TYPE_PIFACE, MAX_PARAM_LEN) == 0)
+    	{
+    		current_bus->type = BUS_PIFACE;
+    		current_io->drv_handle = get_piface_drv();
+    	}
+    	else
+    	{
+    		current_bus->type = BUS_I2C;
+    	}
     }
     else if (strncmp(name, INI_DEV_DRV, MAX_INI_ENTRY_LEN) == 0)
     {
@@ -66,7 +82,7 @@ static int process_entries(io_bus* current_bus, io_dev* current_io, const char* 
         return 0; /* unknown entry */
     }
 
-    return 1; /* success (as defined by inih) */
+    return 1; /* success (as defined by ini.h) */
 }
 
 /**
