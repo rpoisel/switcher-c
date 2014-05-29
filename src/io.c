@@ -1,9 +1,9 @@
 #include <stdlib.h>
 
-#include "i2c_io.h"
+#include "io.h"
 
-int perform_i2c_io(i2c_config* config, i2c_data* data, i2c_cmd cmd,
-        int (*cb_success)(i2c_data* data, char* buf, int buf_size),
+int perform_io(io_config* config, io_data* data, io_cmd cmd,
+        int (*cb_success)(io_data* data, char* buf, int buf_size),
         int (*cb_error)(char* error_msg, char* buf, int buf_size),
         char* buf,
         int buf_size)

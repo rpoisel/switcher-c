@@ -1,20 +1,26 @@
-#ifndef __I2C_IO_H__
-#define __I2C_IO_H__ 1
+#ifndef IO_H_
+#define IO_H _1
 
 #include <stdint.h>
 
-#define MAX_I2C_BUSSES 8
+#define MAX_BUSSES 8
 #define MAX_IO_DEVICES 128
 
-/* for example: /dev/i2c-2 */
-#define MAX_DEV_FILE_LEN 32
+/* f.g. /i2c-2 */
+#define MAX_PARAM_LEN 32
 
-typedef enum
+typedef enum io_cmd
 {
     CMD_NONE,
     CMD_WRITE,
     CMD_READ,
-} i2c_cmd;
+} io_cmd;
+
+typedef enum bus_type
+{
+	I2C,
+	PIFACE
+} bus_type;
 
 typedef struct io_drv
 {
@@ -34,37 +40,38 @@ typedef struct io_drv
         int buf_size_msg);
 } io_drv;
 
-typedef struct i2c_io
+typedef struct io_dev
 {
     uint8_t address;
     io_drv* drv_handle;
-} i2c_io;
+} io_dev;
 
-typedef struct i2c_bus
+typedef struct io_bus
 {
+	bus_type type;
     unsigned num_devices;
-    i2c_io devices[MAX_IO_DEVICES];
-    char dev_file[MAX_DEV_FILE_LEN];
+    io_dev devices[MAX_IO_DEVICES];
+    char dev_file[MAX_PARAM_LEN];
     int fh;
-} i2c_bus;
+} io_bus;
 
-typedef struct i2c_config
+typedef struct io_config
 {
     unsigned num_busses;
-    i2c_bus busses[MAX_I2C_BUSSES];
-} i2c_config;
+    io_bus busses[MAX_BUSSES];
+} io_config;
 
-typedef struct i2c_data
+typedef struct io_data
 {
     unsigned idx_bus;
     unsigned idx_dev;
     uint32_t value;
-} i2c_data;
+} io_data;
 
-int perform_i2c_io(i2c_config* config, i2c_data* data, i2c_cmd cmd,
-        int (*cb_success)(i2c_data* data, char* buf, int buf_size),
+int perform_io(io_config* config, io_data* data, io_cmd cmd,
+        int (*cb_success)(io_data* data, char* buf, int buf_size),
         int (*cb_error)(char* error_msg, char* buf, int buf_size),
         char* buf,
         int buf_size);
 
-#endif
+#endif /* IO_H_ */

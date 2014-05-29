@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "i2c.h"
-#include "i2c_io.h"
+#include "io_i2c.h"
+#include "io.h"
 #include "pcf8574.h"
 
     /* write IOs */

@@ -1,9 +1,9 @@
-#ifndef __PARSE_H__
-#define __PARSE_H__ 1
+#ifndef PARSE_H_
+#define PARSE_H_ 1
 
-#include "i2c_io_fwd.h"
+#include "io_fwd.h"
 
-int parse_config(const char* filename, i2c_config* config);
-int validate_config(i2c_config* i2c_bus_config);
+int parse_config(const char* filename, io_config* config);
+int validate_config(io_config* bus_config);
 
-#endif
+#endif /* PARSE_H_ */

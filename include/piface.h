@@ -8,7 +8,7 @@
 #ifndef PIFACE_H_
 #define PIFACE_H_
 
-#include "i2c_io_fwd.h"
+#include "io_fwd.h"
 
 io_drv* get_piface_drv();
 

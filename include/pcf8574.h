@@ -1,8 +1,8 @@
-#ifndef __PCF8574_H__
-#define __PCF8574_H__ 1
+#ifndef PCF8574_H_
+#define PCF8574_H_ 1
 
-#include "i2c_io_fwd.h"
+#include "io_fwd.h"
 
 io_drv* get_pcf8574_drv();
 
-#endif
+#endif /* PCF8574_H_ */

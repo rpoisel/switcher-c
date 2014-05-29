@@ -10,7 +10,7 @@
 /* own includes */
 #include "http.h"
 
-#include "i2c_io.h"
+#include "io.h"
 
 #define BUF_LEN 1024
 #define URI_DELIM "/"
@@ -31,10 +31,10 @@ typedef enum
 
 /* static function declarations */
 static int begin_request_handler(struct mg_connection *conn);
-static void print_debug_request(const char* uri, i2c_data* parts, request_type type);
-static request_type parse_uri(const char* uri, i2c_data* parts);
+static void print_debug_request(const char* uri, io_data* parts, request_type type);
+static request_type parse_uri(const char* uri, io_data* parts);
 
-struct mg_context* start_http_server(const char *http_options[], i2c_config* i2c_bus_config)
+struct mg_context* start_http_server(const char *http_options[], io_config* bus_config)
 {
     struct mg_callbacks callbacks;
 
@@ -42,7 +42,7 @@ struct mg_context* start_http_server(const char *http_options[], i2c_config* i2c
     memset(&callbacks, 0, sizeof(callbacks));
     callbacks.begin_request = begin_request_handler;
 
-    return mg_start(&callbacks, i2c_bus_config, http_options);
+    return mg_start(&callbacks, bus_config, http_options);
 
 }
 
@@ -51,8 +51,8 @@ static int begin_request_handler(struct mg_connection *conn)
 {
     const struct mg_request_info *request_info = mg_get_request_info(conn);
     char content[BUF_LEN] = { '\0' };
-    i2c_config* i2c_bus_config = (i2c_config*)request_info->user_data;
-    i2c_data parts;
+    io_config* io_bus_config = (io_config*)request_info->user_data;
+    io_data parts;
     request_type type = REQUEST_ERR;
 
     /* process request parameters */
@@ -65,10 +65,10 @@ static int begin_request_handler(struct mg_connection *conn)
     /* forward received values to I2C subsystem */
     if (type != REQUEST_ERR)
     {
-        perform_i2c_io(i2c_bus_config,
+        perform_io(io_bus_config,
                 &parts,
                 type == REQUEST_GET ? CMD_READ : CMD_WRITE,
-                i2c_data_to_json,
+                io_data_to_json,
                 error_to_json,
                 content,
                 BUF_LEN);
@@ -104,7 +104,7 @@ int stop_http_server(struct mg_context* context)
     return EXIT_SUCCESS;
 }
 
-int i2c_data_to_json(i2c_data* data, char* buf, int buf_size)
+int io_data_to_json(io_data* data, char* buf, int buf_size)
 {
     return snprintf(buf, buf_size,
             "{ "
@@ -126,7 +126,7 @@ int error_to_json(char* error_msg, char* buf, int buf_size)
             error_msg);
 }
 
-static request_type parse_uri(const char* uri, i2c_data* parts)
+static request_type parse_uri(const char* uri, io_data* parts)
 {
     request_type result = REQUEST_ERR;
 
@@ -182,7 +182,7 @@ static request_type parse_uri(const char* uri, i2c_data* parts)
     return result;
 }
 
-static void print_debug_request(const char* uri, i2c_data* parts, request_type type)
+static void print_debug_request(const char* uri, io_data* parts, request_type type)
 {
     char message[BUF_LEN] = { '\0' };
     int cnt = 0;

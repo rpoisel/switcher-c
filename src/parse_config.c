@@ -6,20 +6,20 @@
 #include "ini.h"
 
 #include "parse_config.h"
-#include "i2c_io.h"
+#include "io.h"
 #include "pcf8574.h"
 
 #define MAX_INI_ENTRY_LEN 128
 #define INI_BUS "bus"
 #define INI_DEV "device"
 #define INI_DEV_DRV "devdrv"
-#define INI_DEV_FILE "devicefile"
+#define INI_DEV_FILE "bus_parameter_0"
 #define INI_DEV_ADR "address"
 #define INI_DRV_PCF8574 "pcf8574"
 
 typedef struct
 {
-    i2c_config *config;
+    io_config *config;
     char last_section[MAX_INI_ENTRY_LEN];
     int current_bus_id;
     int current_dev_id;
@@ -44,11 +44,11 @@ static void update_user_data(bus_configs* user_data, const char* section)
     user_data->config->num_busses = user_data->current_bus_id + 1;
 }
 
-static int process_entries(i2c_bus* current_bus, i2c_io* current_io, const char* name, const char* value)
+static int process_entries(io_bus* current_bus, io_dev* current_io, const char* name, const char* value)
 {
     if (strncmp(name, INI_DEV_FILE, MAX_INI_ENTRY_LEN) == 0)
     {
-        strncpy(current_bus->dev_file, value, MAX_DEV_FILE_LEN);
+        strncpy(current_bus->dev_file, value, MAX_PARAM_LEN);
     }
     else if (strncmp(name, INI_DEV_DRV, MAX_INI_ENTRY_LEN) == 0)
     {
@@ -79,8 +79,8 @@ static int parser_handler(void* user, const char* section, const char* name,
 
     update_user_data(user_data, section);
 
-    i2c_bus* current_bus = user_data->config->busses + user_data->current_bus_id;
-    i2c_io* current_io = current_bus->devices + user_data->current_dev_id;
+    io_bus* current_bus = user_data->config->busses + user_data->current_bus_id;
+    io_dev* current_io = current_bus->devices + user_data->current_dev_id;
 
     current_bus->num_devices = user_data->current_dev_id + 1;
     current_bus->fh = -1;
@@ -92,12 +92,12 @@ static int parser_handler(void* user, const char* section, const char* name,
     return process_entries(current_bus, current_io, name, value);
 }
 
-int validate_config(i2c_config* i2c_bus_config)
+int validate_config(io_config* bus_config)
 {
     return EXIT_SUCCESS; /* not implemented yet */
 }
 
-int parse_config(const char* filename, i2c_config* config)
+int parse_config(const char* filename, io_config* config)
 {
     bus_configs user_data = {
         .last_section[0] = '\0',

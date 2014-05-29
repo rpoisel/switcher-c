@@ -16,8 +16,8 @@
 /* own functions */
 #include "parse_config.h"
 #include "http.h"
-#include "i2c_io.h"
-#include "i2c.h"
+#include "io.h"
+#include "io_i2c.h"
 
 #define DEFAULT_CONFIG_PATH "../config/io_ext.ini"
 #define DAEMON_NAME "switcher"
@@ -25,7 +25,7 @@
 #define WORK_DIR "/"
 
 static struct mg_context* http_context = NULL;
-static i2c_config i2c_bus_config;
+static io_config bus_config;
 static char *http_options[MAX_NUM_CONF] = { NULL };
 static FILE* stream_pid = NULL;
 static int fh_pid = -1;
@@ -77,12 +77,12 @@ int main(int argc, char* argv[])
         }
     }
 
-    if (parse_config(config_path, &i2c_bus_config) == EXIT_FAILURE)
+    if (parse_config(config_path, &bus_config) == EXIT_FAILURE)
     {
         fprintf(stderr, "Error parsing the configuration file.\n");
         exit(EXIT_FAILURE);
     }
-    else if (validate_config(&i2c_bus_config) == EXIT_FAILURE)
+    else if (validate_config(&bus_config) == EXIT_FAILURE)
     {
         fprintf(stderr, "Illegal configuration. Please check values.\n");
         exit(EXIT_FAILURE);
@@ -92,13 +92,13 @@ int main(int argc, char* argv[])
 
     daemonize();
 
-    if (i2c_init_fhs(&i2c_bus_config) == EXIT_FAILURE)
+    if (i2c_init_fhs(&bus_config) == EXIT_FAILURE)
     {
         syslog(LOG_ERR, "Could not open I2C device files.");
         exit(EXIT_FAILURE);
     }
 
-    http_context = start_http_server((const char **)http_options, &i2c_bus_config);
+    http_context = start_http_server((const char **)http_options, &bus_config);
 
     while (1)
     {
@@ -121,7 +121,7 @@ static void signal_handler(int sig)
     }
 
     syslog(LOG_INFO, "Closing I2C filehandles.");
-    i2c_close_fhs(&i2c_bus_config);
+    i2c_close_fhs(&bus_config);
 
     for (cnt = 0; cnt < MAX_NUM_CONF; cnt++)
     {

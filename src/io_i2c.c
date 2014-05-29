@@ -10,8 +10,8 @@
 
 #include <linux/i2c-dev.h>
 
-#include "i2c.h"
-#include "i2c_io.h"
+#include "io_i2c.h"
+#include "io.h"
 
 #define BUF_LEN 256
 
@@ -21,13 +21,13 @@ static int i2c_ioop(int fh, uint8_t address, void* buf, size_t buf_size,
         char* buf_msg,
         int buf_size_msg);
 
-int i2c_init_fhs(i2c_config* config)
+int i2c_init_fhs(io_config* config)
 {
     unsigned cnt = 0;
 
     for (cnt = 0; cnt < config->num_busses; cnt++)
     {
-        i2c_bus* current_bus = config->busses + cnt;
+        io_bus* current_bus = config->busses + cnt;
         current_bus->fh = open(current_bus->dev_file, O_RDWR);
         if (current_bus->fh == -1)
         {
@@ -38,13 +38,13 @@ int i2c_init_fhs(i2c_config* config)
     return EXIT_SUCCESS;
 }
 
-int i2c_close_fhs(i2c_config* config)
+int i2c_close_fhs(io_config* config)
 {
     unsigned cnt = 0;
 
     for (cnt = 0; cnt < config->num_busses; cnt++)
     {
-        i2c_bus* current_bus = config->busses + cnt;
+        io_bus* current_bus = config->busses + cnt;
         if (close(current_bus->fh) == -1)
         {
             return EXIT_FAILURE;
