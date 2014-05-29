@@ -31,7 +31,7 @@ LDFLAGS := $(shell dpkg-buildflags --get LDFLAGS) \
 
 .PHONY: clean all debug release
 
-all: release
+all: debug
 
 release: debug
 	$(CROSS_COMPILE)$(STRIP) -s $(BIN)
