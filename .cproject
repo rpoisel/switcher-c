@@ -28,7 +28,11 @@
 								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.1003727223" languageId="org.eclipse.cdt.core.g++" languageName="GNU C++" sourceContentType="org.eclipse.cdt.core.cxxSource,org.eclipse.cdt.core.cxxHeader" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
 							</tool>
 							<tool id="org.eclipse.cdt.build.core.settings.holder.758487565" name="GNU C" superClass="org.eclipse.cdt.build.core.settings.holder">
-								<option id="org.eclipse.cdt.build.core.settings.holder.incpaths.1140791914" name="Include Paths" superClass="org.eclipse.cdt.build.core.settings.holder.incpaths" valueType="includePath"/>
+								<option id="org.eclipse.cdt.build.core.settings.holder.incpaths.1140791914" name="Include Paths" superClass="org.eclipse.cdt.build.core.settings.holder.incpaths" valueType="includePath">
+									<listOptionValue builtIn="false" value="/usr/include"/>
+									<listOptionValue builtIn="false" value="/usr/include/asm-generic"/>
+								</option>
+								<option id="org.eclipse.cdt.build.core.settings.holder.symbols.1314934416" name="Symbols" superClass="org.eclipse.cdt.build.core.settings.holder.symbols"/>
 								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.428238684" languageId="org.eclipse.cdt.core.gcc" languageName="GNU C" sourceContentType="org.eclipse.cdt.core.cSource,org.eclipse.cdt.core.cHeader" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
 							</tool>
 						</toolChain>
@@ -64,6 +68,10 @@
 								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.1515034568" languageId="org.eclipse.cdt.core.g++" languageName="GNU C++" sourceContentType="org.eclipse.cdt.core.cxxSource,org.eclipse.cdt.core.cxxHeader" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
 							</tool>
 							<tool id="org.eclipse.cdt.build.core.settings.holder.563880959" name="GNU C" superClass="org.eclipse.cdt.build.core.settings.holder">
+								<option id="org.eclipse.cdt.build.core.settings.holder.incpaths.1456874917" superClass="org.eclipse.cdt.build.core.settings.holder.incpaths" valueType="includePath">
+									<listOptionValue builtIn="false" value="/usr/local/toolchains/gcc-arm-linux-gnueabihf/arm-linux-gnueabihf/libc/usr/include"/>
+									<listOptionValue builtIn="false" value="/usr/local/toolchains/gcc-arm-linux-gnueabihf/arm-linux-gnueabihf/libc/usr/include/asm-generic"/>
+								</option>
 								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.574781768" languageId="org.eclipse.cdt.core.gcc" languageName="GNU C" sourceContentType="org.eclipse.cdt.core.cSource,org.eclipse.cdt.core.cHeader" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
 							</tool>
 						</toolChain>

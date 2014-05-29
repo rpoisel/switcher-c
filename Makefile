@@ -1,5 +1,6 @@
 RM := rm
 STRIP := strip
+CC := gcc
 
 BIN := switcher
 DIR_SRC := src
@@ -15,15 +16,15 @@ LDFLAGS := $(shell dpkg-buildflags --get LDFLAGS) \
 all: release
 
 release: debug
-	$(CC_PREFIX)$(STRIP) -s $(BIN)
+	$(CROSS_COMPILE)$(STRIP) -s $(BIN)
 
 debug: $(BIN)
 
 %.o: %.c
-	$(CC_PREFIX)$(CC) $(CFLAGS) -o $@ $<
+	$(CROSS_COMPILE)$(CC) $(CFLAGS) -o $@ $<
 
 $(BIN): $(OBJ)
-	$(CC_PREFIX)$(CC) $(LDFLAGS) -o $(BIN) $(OBJ)
+	$(CROSS_COMPILE)$(CC) $(LDFLAGS) -o $(BIN) $(OBJ)
 
 .PHONY: clean all debug release
 

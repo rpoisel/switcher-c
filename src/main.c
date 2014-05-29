@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <sys/file.h>
 #include <errno.h>
+#include <asm-generic/errno.h>
 
 /* included libraries */
 
