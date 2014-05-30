@@ -104,9 +104,7 @@ static int parser_handler(void* user, const char* section, const char* name,
 	io_bus* current_bus = user_data->config->busses + user_data->current_bus_id;
 	io_dev* current_dev = current_bus->devices + user_data->current_dev_id;
 
-	/* current_bus->num_devices = user_data->current_dev_id + 1; */
-
-#if 1
+#if 0
 	printf("Section: %s, Name: %s, Value: %s\n", section, name, value);
 #endif
 
