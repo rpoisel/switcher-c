@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>PiFace Door Opener</title>
+<script
+    src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script type="text/javascript">
+	function door_io(action) {
+		$.ajax({
+			url : 'http://192.168.88.253:8080/2/0/' + action,
+			dataType : 'JSONP',
+			jsonpCallback : 'callback',
+			type : 'GET',
+			success : function(json) {
+				if (json['value'] == 1) {
+					$('#status').text('Door-relay is open. ');
+				}
+				else {
+					$('#status').text('Door-relay is closed. ');
+				}
+			},
+		});
+	}
+</script>
+</head>
+<body>
+    <button type="button" onclick="door_io(1);">Open</button>
+    <button type="button" onclick="door_io(0);">Close</button>
+    <div id="status"></div>
+</body>
+</html>

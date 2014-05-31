@@ -100,11 +100,11 @@ int stop_http_server(struct mg_context* context)
 
 int io_data_to_json(io_data* data, char* buf, int buf_size)
 {
-	return snprintf(buf, buf_size, "{ "
+	return snprintf(buf, buf_size, "callback({ "
 			"\"bus_idx\": \"%d\", "
 			"\"dev_idx\": %d, "
 			"\"value\": \"%x\""
-			" }", data->idx_bus, data->idx_dev, data->value);
+			" })", data->idx_bus, data->idx_dev, data->value);
 }
 
 int error_to_json(char* error_msg, char* buf, int buf_size)
