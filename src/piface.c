@@ -35,13 +35,7 @@ static int piface_write(int fh /* ignored */, uint8_t address /* ignored */,
 		int (*cb_error)(char* error_msg, char* buf, int buf_size),
 		char* buf_msg, int buf_size_msg)
 {
-	/* pfio_digital_write() */
-	uint8_t cnt = 0;
-
-	for (cnt = 0; cnt < 8; cnt++)
-	{
-		pfio_digital_write(cnt, ((*value) & (1 << cnt)) == (1 << cnt));
-	}
+	pfio_write_output(*value);
 	return 1;
 }
 
@@ -59,14 +53,7 @@ static int piface_read(int fh /* ignored */, uint8_t address /* ignored */,
 		int (*cb_error)(char* error_msg, char* buf, int buf_size),
 		char* buf_msg, int buf_size_msg)
 {
-	uint8_t cnt = 0;
-	uint8_t pin_value = 0;
-
-	for (cnt = 0; cnt < 8; cnt++)
-	{
-		pin_value = pfio_digital_read(cnt);
-		(*value) |= (pin_value << cnt);
-	}
+	(*value) = pfio_read_output();
 	return 1;
 }
 

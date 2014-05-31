@@ -103,7 +103,7 @@ int io_data_to_json(io_data* data, char* buf, int buf_size)
 	return snprintf(buf, buf_size, "{ "
 			"\"bus_idx\": \"%d\", "
 			"\"dev_idx\": %d, "
-			"\"value\": \"%d\""
+			"\"value\": \"%x\""
 			" }", data->idx_bus, data->idx_dev, data->value);
 }
 

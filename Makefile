@@ -23,11 +23,11 @@ MKDIR := mkdir
 TOUCH := touch
 
 # compiler flags
-CFLAGS := $(shell dpkg-buildflags --get CFLAGS) \
-    -c -W -Wall -DNO_SSL -DNO_CGI -pipe \
+# $(shell dpkg-buildflags --get CFLAGS)
+# $(shell dpkg-buildflags --get LDFLAGS)
+CFLAGS := -O0 -g -c -W -Wall -DNO_SSL -DNO_CGI -pipe \
     -I$(DIR_INC)
-LDFLAGS := $(shell dpkg-buildflags --get LDFLAGS) \
-    -pthread
+LDFLAGS := -pthread
 
 .PHONY: clean all debug release
 
