@@ -10,6 +10,7 @@
 #include <sys/file.h>
 #include <errno.h>
 #include <asm-generic/errno.h>
+#include <libgen.h>
 
 /* included libraries */
 
@@ -19,9 +20,11 @@
 #include "io.h"
 #include "io_i2c.h"
 
+#define MAX_PATH_LEN 255
 #define DEFAULT_CONFIG_PATH "config/io_ext.ini"
 #define DAEMON_NAME "switcher"
-#define PID_FILE "/var/run/switcher/switcher.pid"
+#define PID_FILE "switcher.pid"
+#define PID_DIR "/var/run/switcher"
 #define WORK_DIR "/"
 
 static struct mg_context* http_context = NULL;
@@ -169,6 +172,9 @@ static void daemonize(void)
 	int cnt = -1;
 	pid_t pid;
 	int rc = -1;
+	char pid_path[MAX_PATH_LEN]= { '\0' };
+	struct stat st_data =
+	{ 0 };
 
 	pid = fork();
 
@@ -198,7 +204,7 @@ static void daemonize(void)
 
 	if (pid < 0)
 	{
-		syslog(LOG_ERR, "Could not spawn daemon process. Stage 2n");
+		syslog(LOG_ERR, "Could not spawn daemon process. Stage 2.");
 		exit(EXIT_FAILURE);
 	}
 
@@ -216,7 +222,20 @@ static void daemonize(void)
 		close(cnt);
 	}
 
-	fh_pid = open(PID_FILE, O_CREAT | O_RDWR, 0666);
+	if (snprintf(pid_path, MAX_PATH_LEN, "%s/%s", PID_DIR, PID_FILE) < 0)
+	{
+		syslog(LOG_ERR, "Could not create complete path of PID file.");
+		exit(EXIT_FAILURE);
+	}
+	if (stat(PID_DIR, &st_data) == -1)
+	{
+		if (mkdir(PID_DIR, 0700) == -1)
+		{
+			syslog(LOG_ERR, "Could not create directory for PID file.");
+			exit(EXIT_FAILURE);
+		}
+	}
+	fh_pid = open(pid_path, O_CREAT | O_RDWR, 0666);
 	rc = flock(fh_pid, LOCK_EX | LOCK_NB);
 	if (rc)
 	{
