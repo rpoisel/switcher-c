@@ -77,7 +77,7 @@ static int begin_request_handler(struct mg_connection *conn)
 
 	/* Send HTTP reply to the client */
 	mg_printf(conn, "HTTP/1.1 200 OK\r\n"
-			"Content-Type: text/plain\r\n"
+			"Content-Type: text/javascript\r\n"
 			"Content-Length: %zu\r\n"
 			"\r\n"
 			"%s", strnlen(content, BUF_LEN), content);
