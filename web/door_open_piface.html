@@ -6,27 +6,66 @@
 <script
     src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script type="text/javascript">
-	function door_io(action) {
+	function set_output(pin, value) {
 		$.ajax({
-			url : 'http://192.168.88.253:8080/2/0/' + action,
+			url : 'http://192.168.88.253:8080/2/0/' + value.toString(16),
 			dataType : 'JSONP',
 			jsonpCallback : 'callback',
 			type : 'GET',
 			success : function(json) {
-				if (json['value'] == 1) {
-					$('#status').text('Door-relay is open. ');
+				var currentValue = parseInt(json['value'], 16);
+				if ((currentValue & (1 << pin)) == (1 << pin)) {
+					$('#status_' + pin).text('1');
+				} else {
+					$('#status_' + pin).text('0');
 				}
-				else {
-					$('#status').text('Door-relay is closed. ');
+			},
+		});
+	}
+	function door_io(pin, value) {
+		$.ajax({
+			url : 'http://192.168.88.253:8080/2/0/',
+			dataType : 'JSONP',
+			jsonpCallback : 'callback',
+			type : 'GET',
+			success : function(json) {
+				newValue = parseInt(json['value'], 16);
+				if (value == 1) {
+					newValue |= (1 << pin);
+				} else {
+					newValue &= ~(1 << pin);
 				}
+
+				set_output(pin, newValue);
 			},
 		});
 	}
 </script>
 </head>
 <body>
-    <button type="button" onclick="door_io(1);">Open</button>
-    <button type="button" onclick="door_io(0);">Close</button>
-    <div id="status"></div>
+    <button type="button" onclick="door_io(0, 1);">1</button>
+    <button type="button" onclick="door_io(0, 0);">0</button>
+    <div id="status_0"></div>
+    <button type="button" onclick="door_io(1, 1);">1</button>
+    <button type="button" onclick="door_io(1, 0);">0</button>
+    <div id="status_1"></div>
+    <button type="button" onclick="door_io(2, 1);">1</button>
+    <button type="button" onclick="door_io(2, 0);">0</button>
+    <div id="status_2"></div>
+    <button type="button" onclick="door_io(3, 1);">1</button>
+    <button type="button" onclick="door_io(3, 0);">0</button>
+    <div id="status_3"></div>
+    <button type="button" onclick="door_io(4, 1);">1</button>
+    <button type="button" onclick="door_io(4, 0);">0</button>
+    <div id="status_4"></div>
+    <button type="button" onclick="door_io(5, 1);">1</button>
+    <button type="button" onclick="door_io(5, 0);">0</button>
+    <div id="status_5"></div>
+    <button type="button" onclick="door_io(6, 1);">1</button>
+    <button type="button" onclick="door_io(6, 0);">0</button>
+    <div id="status_6"></div>
+    <button type="button" onclick="door_io(7, 1);">1</button>
+    <button type="button" onclick="door_io(7, 0);">0</button>
+    <div id="status_7"></div>
 </body>
 </html>
