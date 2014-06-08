@@ -9,7 +9,8 @@ DIR_OBJ = $(DIR_OUTPUT)/$(DIR_PLATFORM)/$(DIR_TARGET)/obj
 DIR_BIN = $(DIR_OUTPUT)/$(DIR_PLATFORM)/$(DIR_TARGET)/bin
 DIR_MODULE := .
 DIR_SRC := $(DIR_TOP)$(DIR_MODULE)/src
-DIR_INC := $(DIR_TOP)$(DIR_MODULE)/include
+DIR_INC := $(DIR_TOP)$(DIR_MODULE)/include \
+    $(DIR_TOP)$(DIR_MODULE)/mongoose
 
 # file extensions
 EXT_SRC := .c
@@ -18,6 +19,8 @@ EXT_SRC := .c
 BIN = $(DIR_BIN)/switcher
 OBJ = \
     $(addprefix $(DIR_OBJ)/,$(patsubst %$(EXT_SRC),%$(EXT_OBJ),$(notdir $(wildcard $(DIR_SRC)/*$(EXT_SRC)))))
+OBJ_MONGOOSE = \
+    $(addprefix $(DIR_OBJ)/mongoose/,$(patsubst %$(EXT_SRC),%$(EXT_OBJ),$(notdir $(wildcard mongoose/*$(EXT_SRC)))))
 
 # programs
 RM := rm
@@ -30,7 +33,7 @@ TOUCH := touch
 # $(shell dpkg-buildflags --get CFLAGS)
 # $(shell dpkg-buildflags --get LDFLAGS)
 CFLAGS := -c -W -Wall -DNO_SSL -DNO_CGI -pipe \
-    -I$(DIR_INC)
+    $(foreach DIR,$(DIR_INC),-I$(DIR))
 LDFLAGS := -pthread
 
 ifeq ($(BUILD_TARGET),release)
@@ -47,15 +50,21 @@ endif
 
 all: $(BIN)
 
+$(OBJ_MONGOOSE): $(DIR_OBJ)/mongoose/%$(EXT_OBJ): \
+	mongoose/%$(EXT_SRC) \
+	$(DIR_OBJ)/mongoose/.d
+	$(CROSS_COMPILE)$(CC) $(CFLAGS) -o $@ $<
+
 $(OBJ): $(DIR_OBJ)/%$(EXT_OBJ): \
-    $(DIR_SRC)/%$(EXT_SRC) \
-    $(DIR_OBJ)/.d
+	$(DIR_SRC)/%$(EXT_SRC) \
+	$(DIR_OBJ)/.d
 	$(CROSS_COMPILE)$(CC) $(CFLAGS) -o $@ $<
 
 $(BIN): \
-    $(OBJ) \
-    $(DIR_BIN)/.d
-	$(CROSS_COMPILE)$(CC) $(LDFLAGS) -o $(BIN) $(OBJ)
+	$(OBJ) \
+	$(OBJ_MONGOOSE) \
+	$(DIR_BIN)/.d
+	$(CROSS_COMPILE)$(CC) $(LDFLAGS) -o $(BIN) $(OBJ) $(OBJ_MONGOOSE)
 	
 %.d:
 	$(MKDIR) -p $(dir $@)

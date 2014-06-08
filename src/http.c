@@ -26,39 +26,53 @@ typedef enum
 } uri_stages;
 
 /* static function declarations */
+static int event_handler(struct mg_connection* conn, enum mg_event ev);
 static int begin_request_handler(struct mg_connection *conn);
 static void print_debug_request(const char* uri, io_data* parts,
 		request_type type);
 static request_type parse_uri(const char* uri, io_data* parts);
 
-struct mg_context* start_http_server(const char *http_options[],
-		io_config* bus_config)
+struct mg_server* start_http_server(const char *http_options[],
+		int num_http_options, io_config* bus_config)
 {
-	struct mg_callbacks callbacks;
+	int cnt = 0;
+	struct mg_server* server = mg_create_server(bus_config, event_handler);
+	for (cnt = 0; cnt < num_http_options; cnt += 2)
+	{
+		mg_set_option(server, http_options[cnt], http_options[cnt + 1]);
+	}
 
-	// Prepare callbacks structure. We have only one callback, the rest are NULL.
-	memset(&callbacks, 0, sizeof(callbacks));
-	callbacks.begin_request = begin_request_handler;
+	return server;
+}
 
-	return mg_start(&callbacks, bus_config, http_options);
-
+static int event_handler(struct mg_connection* conn, enum mg_event event)
+{
+	switch (event)
+	{
+	case MG_REQUEST:
+		return begin_request_handler(conn);
+	case MG_AUTH:
+		return MG_TRUE; /* no authentication necessary at the moment */
+	default:
+		return MG_FALSE;
+	}
+	return MG_FALSE;
 }
 
 /* This function will be called by mongoose on every new request. */
 static int begin_request_handler(struct mg_connection *conn)
 {
-	const struct mg_request_info *request_info = mg_get_request_info(conn);
 	char content[BUF_LEN] =
 	{ '\0' };
-	io_config* io_bus_config = (io_config*) request_info->user_data;
+	io_config* io_bus_config = (io_config*) conn->server_param;
 	io_data parts;
 	request_type type = REQUEST_ERR;
 
 	/* process request parameters */
-	type = parse_uri(request_info->uri, &parts);
+	type = parse_uri(conn->uri, &parts);
 
 #if 1
-	print_debug_request(request_info->uri, &parts, type);
+	print_debug_request(conn->uri, &parts, type);
 #endif
 
 	/* forward received values to I2C subsystem */
@@ -87,13 +101,13 @@ static int begin_request_handler(struct mg_connection *conn)
 	 * replied to the client, and mongoose should not send client
 	 * any more data.
 	 */
-	return 1;
+	return MG_TRUE;
 }
 
-int stop_http_server(struct mg_context* context)
+int stop_http_server(struct mg_server* server)
 {
 	/* Stop the server. */
-	mg_stop(context);
+	mg_destroy_server(&server);
 
 	return EXIT_SUCCESS;
 }

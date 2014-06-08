@@ -27,7 +27,7 @@
 #define PID_DIR "/var/run/switcher"
 #define WORK_DIR "/"
 
-static struct mg_context* http_context = NULL;
+static struct mg_server* http_server = NULL;
 static io_config bus_config;
 static char *http_options[MAX_NUM_CONF] =
 { NULL };
@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
     strncpy(http_options[cnt_option], option, STR_CONF_LEN); \
     cnt_option++;
 
-	ADD_OPTION_ELEMENT("listening_ports")
+	ADD_OPTION_ELEMENT("listening_port")
 	ADD_OPTION_ELEMENT("8080")
 
 	if (signal(SIGINT, signal_handler) == SIG_ERR
@@ -117,11 +117,12 @@ int main(int argc, char* argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	http_context = start_http_server((const char **) http_options, &bus_config);
+	http_server = start_http_server((const char **) http_options, cnt_option,
+			&bus_config);
 
-	while (1)
+	for (;;)
 	{
-		sleep(10);
+		mg_poll_server(http_server, 1000);
 	}
 
 	return EXIT_FAILURE; /* should never be reached */
@@ -132,11 +133,11 @@ static void signal_handler(int sig)
 	int ret = 0;
 	int cnt = 0;
 
-	if (NULL != http_context)
+	if (NULL != http_server)
 	{
 		syslog(LOG_INFO, "Shutting down HTTP server.");
-		stop_http_server(http_context);
-		http_context = NULL;
+		stop_http_server(http_server);
+		http_server = NULL;
 	}
 
 	syslog(LOG_INFO, "Shutting down IO subsystem.");
@@ -172,7 +173,8 @@ static void daemonize(void)
 	int cnt = -1;
 	pid_t pid;
 	int rc = -1;
-	char pid_path[MAX_PATH_LEN]= { '\0' };
+	char pid_path[MAX_PATH_LEN] =
+	{ '\0' };
 	struct stat st_data =
 	{ 0 };
 
