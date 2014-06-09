@@ -61,7 +61,7 @@ endif
 	-$(RM) $(DIR_OUTPUT)/$(DIR_PLATFORM)/$(DIR_TARGET)
 
 .PHONY: distclean
-distclean:
+distclean: clean
 	-$(RM) $(DIR_OUTPUT)
 
 # file extensions
