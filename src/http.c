@@ -27,7 +27,8 @@ typedef enum
 
 /* static function declarations */
 static int event_handler(struct mg_connection* conn, enum mg_event ev);
-static int begin_request_handler(struct mg_connection *conn);
+static int http_request_handler(struct mg_connection *conn);
+static int websocket_request_handler(struct mg_connection *conn);
 static void print_debug_request(const char* uri, io_data* parts,
 		request_type type);
 static request_type parse_uri(const char* uri, io_data* parts);
@@ -50,7 +51,16 @@ static int event_handler(struct mg_connection* conn, enum mg_event event)
 	switch (event)
 	{
 	case MG_REQUEST:
-		return begin_request_handler(conn);
+	{
+		if (conn->is_websocket)
+		{
+			return websocket_request_handler(conn);
+		}
+		else
+		{
+			return http_request_handler(conn);
+		}
+	}
 	case MG_AUTH:
 		return MG_TRUE; /* no authentication necessary at the moment */
 	default:
@@ -60,7 +70,7 @@ static int event_handler(struct mg_connection* conn, enum mg_event event)
 }
 
 /* This function will be called by mongoose on every new request. */
-static int begin_request_handler(struct mg_connection *conn)
+static int http_request_handler(struct mg_connection *conn)
 {
 	char content[BUF_LEN] =
 	{ '\0' };
@@ -101,6 +111,12 @@ static int begin_request_handler(struct mg_connection *conn)
 	 * replied to the client, and mongoose should not send client
 	 * any more data.
 	 */
+	return MG_TRUE;
+}
+
+static int websocket_request_handler(struct mg_connection *conn)
+{
+	io_config* io_bus_config = (io_config*) conn->server_param;
 	return MG_TRUE;
 }
 
