@@ -13,7 +13,7 @@ local_src              := $(addprefix $(DIR_SRC)/$(local_dir)/src/,\
     pfio.c \
     piface.c)
 local_objs             := $(addprefix $(DIR_OBJ)/,$(subst .c,.o,$(local_src)))
-local_dep              := mongoose/libmongoose.a
+local_dep              := $(addprefix $(DIR_OBJ)/,mongoose/libmongoose.a)
 
 libraries              += $(local_lib)
 sources                += $(local_src)
