@@ -8,13 +8,13 @@ endif
 
 # output directories
 DIR_OUTPUT := output
-DIR_PLATFORM ?= native
+PLATFORM ?= native
 
 # directory structure
 DIR_TOP := $(dir $(lastword $(MAKEFILE_LIST)))
 DIR_SRC := $(DIR_TOP)
-DIR_OBJ = $(DIR_OUTPUT)/$(DIR_PLATFORM)/$(DIR_TARGET)/obj
-DIR_BIN = $(DIR_OUTPUT)/$(DIR_PLATFORM)/$(DIR_TARGET)
+DIR_OBJ = $(DIR_OUTPUT)/$(PLATFORM)/$(DIR_TARGET)/obj
+DIR_BIN = $(DIR_OUTPUT)/$(PLATFORM)/$(DIR_TARGET)
 
 modules        := . mongoose
 programs       :=
@@ -28,11 +28,17 @@ extra_clean    :=
 object_dirs_deps = $(addsuffix /.d,$(sort $(dir $(objects))))
 
 # programs
-RM := rm -rf
+RM    := rm -rf
 STRIP := $(CROSS_COMPILE)strip -s
-CC := $(CROSS_COMPILE)gcc
+CC    := $(CROSS_COMPILE)gcc
 MKDIR := mkdir
 TOUCH := touch
+TEST  := test
+
+# user defined functions
+define delete-empty-dir
+    $(TEST) -d $1 -a "$$(ls -A $1 2>/dev/null)" || $(RM) $1
+endef
 
 all:
 
@@ -58,7 +64,9 @@ endif
 ifneq ($(strip $(objects)),)
 	-$(RM) $(objects)
 endif
-	-$(RM) $(DIR_OUTPUT)/$(DIR_PLATFORM)/$(DIR_TARGET)
+	-$(RM) $(DIR_OUTPUT)/$(PLATFORM)/$(DIR_TARGET)
+	-$(call delete-empty-dir,$(DIR_OUTPUT)/$(PLATFORM))
+	-$(call delete-empty-dir,$(DIR_OUTPUT))
 
 .PHONY: distclean
 distclean: clean
