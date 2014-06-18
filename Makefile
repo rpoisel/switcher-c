@@ -34,6 +34,10 @@ CC    := $(CROSS_COMPILE)gcc
 MKDIR := mkdir
 TOUCH := touch
 TEST  := test
+GREP  := grep
+PR    := pr
+AWK   := awk
+SORT  := sort
 
 # user defined functions
 define delete-empty-dir
@@ -68,10 +72,6 @@ endif
 	-$(call delete-empty-dir,$(DIR_OUTPUT)/$(PLATFORM))
 	-$(call delete-empty-dir,$(DIR_OUTPUT))
 
-.PHONY: distclean
-distclean: clean
-	-$(RM) $(DIR_OUTPUT)
-
 # file extensions
 EXT_SRC := .c
 
@@ -87,6 +87,15 @@ else
 endif
 
 all: $(programs)
+
+.PHONY: help
+help:
+	@$(MAKE) --print-data-base --question | \
+	$(GREP) -v -e '^no-such-target' -e '^makefile' |       \
+	$(AWK) '/^[^.%][-A-Za-z0-9_]*:/                        \
+                   { print substr($$1, 1, length($$1)-1) }' |  \
+	$(SORT) |                                              \
+	$(PR) --omit-pagination --width=80 --columns=4         \
 
 $(DIR_OBJ)/%.o: \
     %.c \
