@@ -14,6 +14,7 @@ local_src              := $(addprefix $(DIR_SRC)/$(local_dir)/src/,\
     piface.c)
 local_objs             := $(addprefix $(DIR_OBJ)/,$(subst .c,.o,$(local_src)))
 local_dep              := $(addprefix $(DIR_OBJ)/,mongoose/libmongoose.a)
+local_lib_dep          := -lpthread
 
 libraries              += $(local_lib)
 sources                += $(local_src)
@@ -22,4 +23,4 @@ objects                += $(local_objs)
 programs               += $(local_program)
 
 $(local_program): $(local_objs) $(local_dep)
-	$(CC) $(LDFLAGS) -o $@ $^
+	$(CC) $(LDFLAGS) -o $@ $^ $(local_lib_dep)

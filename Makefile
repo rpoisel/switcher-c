@@ -16,7 +16,7 @@ DIR_SRC := $(DIR_TOP)
 DIR_OBJ = $(DIR_OUTPUT)/$(PLATFORM)/$(DIR_TARGET)/obj
 DIR_BIN = $(DIR_OUTPUT)/$(PLATFORM)/$(DIR_TARGET)
 
-modules        := . mongoose
+modules        := mongoose .
 programs       :=
 sources        :=
 includes       :=
@@ -85,7 +85,6 @@ ifeq ($(BUILD_TARGET),release)
 else
 	CFLAGS += -O0 -g -DDEBUG
 endif
-LDFLAGS := -pthread
 
 all: $(programs)
 
