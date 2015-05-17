@@ -1,3 +1,4 @@
+#include <dev_piface.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,10 +6,12 @@
 
 #include "ini.h"
 
-#include "parse_config.h"
-#include "io.h"
-#include "pcf8574.h"
-#include "piface.h"
+#include <trace.h>
+#include <parse_config.h>
+#include <io.h>
+#include <io_i2c.h>
+#include <pcf8574.h>
+#include <mcp23017.h>
 
 #define MAX_INI_ENTRY_LEN 128
 #define INI_BUS "bus"
@@ -17,10 +20,11 @@
 #define INI_BUS_TYPE_PIFACE "piface"
 #define INI_DEV "device"
 #define INI_DEV_DRV "devdrv"
-#define INI_BUS_PARAM_0 "bus_parameter_0"
-#define INI_DEV_ADR "address"
+#define INI_BUS_PARAM "bus_parameter"
+#define INI_DEV_PARAM "dev_parameter"
 #define INI_DRV_PCF8574 "pcf8574"
 #define INI_DRV_PIFACE "piface"
+#define INI_DRV_MCP23017 "mcp23017"
 
 typedef struct
 {
@@ -52,19 +56,20 @@ static void update_user_data(bus_configs* user_data, const char* section)
 static int process_entries(io_bus* current_bus, io_dev* current_dev,
 		const char* name, const char* value)
 {
-	if (strncmp(name, INI_BUS_PARAM_0, MAX_INI_ENTRY_LEN) == 0)
+	if (strncmp(name, INI_BUS_PARAM, MAX_INI_ENTRY_LEN) == 0)
 	{
-		strncpy(current_bus->param_0, value, MAX_PARAM_LEN);
+		if (NULL != current_bus->drv_handle
+				&& NULL != current_bus->drv_handle->get_bus_data)
+		{
+			current_bus->bus_data = current_bus->drv_handle->get_bus_data(
+					value);
+		}
 	}
 	else if (strncmp(name, INI_BUS_TYPE, MAX_INI_ENTRY_LEN) == 0)
 	{
-		if (strncmp(value, INI_BUS_TYPE_PIFACE, MAX_PARAM_LEN) == 0)
+		if (strncmp(value, INI_BUS_TYPE_I2C, MAX_PARAM_LEN) == 0)
 		{
-			current_bus->type = BUS_PIFACE;
-		}
-		else
-		{
-			current_bus->type = BUS_I2C;
+			current_bus->drv_handle = get_i2c_drv();
 		}
 	}
 	else if (strncmp(name, INI_DEV_DRV, MAX_INI_ENTRY_LEN) == 0)
@@ -77,11 +82,18 @@ static int process_entries(io_bus* current_bus, io_dev* current_dev,
 		{
 			current_dev->drv_handle = get_piface_drv();
 		}
+		else if (strncmp(value, INI_DRV_MCP23017, MAX_INI_ENTRY_LEN) == 0)
+		{
+			current_dev->drv_handle = get_mcp23017_drv();
+		}
 		current_bus->num_devices += 1;
 	}
-	else if (strncmp(name, INI_DEV_ADR, MAX_INI_ENTRY_LEN) == 0)
+	else if (strncmp(name, INI_DEV_PARAM, MAX_INI_ENTRY_LEN) == 0)
 	{
-		current_dev->address = strtol(value, NULL, 16);
+		if (NULL != current_bus->drv_handle && NULL != current_bus->drv_handle->get_bus_dev_data)
+		{
+			current_dev->dev_bus_data = current_bus->drv_handle->get_bus_dev_data(value);
+		}
 	}
 	else
 	{
@@ -104,9 +116,7 @@ static int parser_handler(void* user, const char* section, const char* name,
 	io_bus* current_bus = user_data->config->busses + user_data->current_bus_id;
 	io_dev* current_dev = current_bus->devices + user_data->current_dev_id;
 
-#if DEBUG
-	printf("Section: %s, Name: %s, Value: %s\n", section, name, value);
-#endif
+	TRACE(printf("Section: %s, Name: %s, Value: %s\n", section, name, value));
 
 	return process_entries(current_bus, current_dev, name, value);
 }

@@ -3,6 +3,6 @@
 
 #include "io_fwd.h"
 
-io_drv* get_pcf8574_drv();
+dev_drv* get_pcf8574_drv();
 
 #endif /* PCF8574_H_ */

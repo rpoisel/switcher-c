@@ -15,15 +15,46 @@ int conf_init(io_config* config)
 	config->num_busses = 0;
 	for (cnt_bus = 0; cnt_bus < MAX_BUSSES; cnt_bus++)
 	{
-		(config->busses + cnt_bus)->type = BUS_NONE;
-		(config->busses + cnt_bus)->num_devices = 0;
+		io_bus* current_bus = config->busses + cnt_bus;
+		current_bus->num_devices = 0;
 		for (cnt_dev = 0; cnt_dev < MAX_IO_DEVICES; cnt_dev++)
 		{
-			((config->busses + cnt_bus)->devices + cnt_dev)->address = 0;
-			((config->busses + cnt_bus)->devices + cnt_dev)->drv_handle = NULL;
+			io_dev* current_dev = current_bus->devices + cnt_dev;
+			current_dev->dev_bus_data = NULL;
+			current_dev->dev_data = NULL;
+			current_dev->drv_handle = NULL;
 		}
-		memset((config->busses + cnt_bus)->param_0, '\0', MAX_PARAM_LEN);
-		(config->busses + cnt_bus)->fh = -1;
+		current_bus->bus_data = NULL;
+	}
+	return EXIT_SUCCESS;
+}
+
+int conf_deinit(io_config* config)
+{
+	unsigned cnt_bus = 0;
+	unsigned cnt_dev = 0;
+
+	config->num_busses = 0;
+	for (cnt_bus = 0; cnt_bus < MAX_BUSSES; cnt_bus++)
+	{
+		io_bus* current_bus = (config->busses + cnt_bus);
+		for (cnt_dev = 0; cnt_dev < MAX_IO_DEVICES; cnt_dev++)
+		{
+			io_dev* current_dev = current_bus->devices + cnt_dev;
+			if (NULL != current_bus->drv_handle
+					&& NULL != current_bus->drv_handle->discard_bus_dev_data)
+			{
+				current_bus->drv_handle->discard_bus_dev_data(
+						current_dev->dev_bus_data);
+				current_dev->dev_bus_data = NULL;
+			}
+		}
+		if (NULL != current_bus->drv_handle
+				&& NULL != current_bus->drv_handle->discard_bus_data)
+		{
+			current_bus->drv_handle->discard_bus_data(current_bus->bus_data);
+			current_bus->bus_data = NULL;
+		}
 	}
 	return EXIT_SUCCESS;
 }
@@ -36,21 +67,17 @@ int io_init(io_config* config)
 	for (cnt_bus = 0; cnt_bus < config->num_busses; cnt_bus++)
 	{
 		io_bus* current_bus = config->busses + cnt_bus;
+		if (NULL != current_bus->drv_handle && NULL != current_bus->drv_handle->open)
+		{
+			current_bus->drv_handle->open(current_bus);
+		}
 		for (cnt_dev = 0; cnt_dev < current_bus->num_devices; cnt_dev++)
 		{
 			io_dev* current_dev = current_bus->devices + cnt_dev;
 			if (NULL != current_dev->drv_handle
 					&& NULL != current_dev->drv_handle->init)
 			{
-				current_dev->drv_handle->init(NULL);
-			}
-		}
-		if (current_bus->type == BUS_I2C)
-		{
-			current_bus->fh = open(current_bus->param_0, O_RDWR);
-			if (current_bus->fh == -1)
-			{
-				return EXIT_FAILURE;
+				current_dev->drv_handle->init(current_bus, current_dev);
 			}
 		}
 	}
@@ -72,15 +99,12 @@ int io_deinit(io_config* config)
 			if (NULL != current_dev->drv_handle
 					&& NULL != current_dev->drv_handle->deinit)
 			{
-				current_dev->drv_handle->deinit(NULL);
+				current_dev->drv_handle->deinit(current_bus, current_dev);
 			}
 		}
-		if (current_bus->type == BUS_I2C)
+		if (NULL != current_bus->drv_handle && NULL != current_bus->drv_handle->close)
 		{
-			if (close(current_bus->fh) == -1)
-			{
-				return EXIT_FAILURE;
-			}
+			current_bus->drv_handle->close(current_bus);
 		}
 	}
 
@@ -99,10 +123,10 @@ int perform_io(io_config* config, io_data* data, io_cmd cmd,
 			if (cmd == CMD_WRITE)
 			{
 				if (((config->busses + data->idx_bus)->devices + data->idx_dev)->drv_handle->write(
-						(config->busses + data->idx_bus)->fh,
+						(config->busses + data->idx_bus),
 						((config->busses + data->idx_bus)->devices
-								+ data->idx_dev)->address, &data->value,
-						cb_error, buf, buf_size) > 0)
+								+ data->idx_dev), &data->value, cb_error, buf,
+						buf_size) > 0)
 				{
 					cb_success(data, buf, buf_size);
 				}
@@ -111,10 +135,10 @@ int perform_io(io_config* config, io_data* data, io_cmd cmd,
 			else if (cmd == CMD_READ)
 			{
 				if (((config->busses + data->idx_bus)->devices + data->idx_dev)->drv_handle->read(
-						(config->busses + data->idx_bus)->fh,
+						(config->busses + data->idx_bus),
 						((config->busses + data->idx_bus)->devices
-								+ data->idx_dev)->address, &data->value,
-						cb_error, buf, buf_size) > 0)
+								+ data->idx_dev), &data->value, cb_error, buf,
+						buf_size) > 0)
 				{
 					cb_success(data, buf, buf_size);
 				}

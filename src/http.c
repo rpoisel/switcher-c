@@ -116,7 +116,9 @@ static int http_request_handler(struct mg_connection *conn)
 
 static int websocket_request_handler(struct mg_connection *conn)
 {
+#if 0
 	io_config* io_bus_config = (io_config*) conn->server_param;
+#endif
 	return MG_TRUE;
 }
 

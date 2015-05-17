@@ -27,8 +27,10 @@
 #define PID_DIR "/var/run/switcher"
 #define WORK_DIR "/"
 
+extern char* optarg;
+
 static struct mg_server* http_server = NULL;
-static io_config bus_config;
+static io_config io_configuration;
 static char *http_options[MAX_NUM_CONF] =
 { NULL };
 static FILE* stream_pid = NULL;
@@ -86,19 +88,19 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	if (conf_init(&bus_config) == EXIT_FAILURE)
+	if (conf_init(&io_configuration) == EXIT_FAILURE)
 	{
 		fprintf(stderr,
 				"Error initializing the bus configuration data structure.\n");
 		exit(EXIT_FAILURE);
 	}
 
-	if (parse_config(config_path, &bus_config) == EXIT_FAILURE)
+	if (parse_config(config_path, &io_configuration) == EXIT_FAILURE)
 	{
 		fprintf(stderr, "Error parsing the configuration file.\n");
 		exit(EXIT_FAILURE);
 	}
-	else if (validate_config(&bus_config) == EXIT_FAILURE)
+	else if (validate_config(&io_configuration) == EXIT_FAILURE)
 	{
 		fprintf(stderr, "Illegal configuration. Please check values.\n");
 		exit(EXIT_FAILURE);
@@ -111,14 +113,14 @@ int main(int argc, char* argv[])
 		daemonize();
 	}
 
-	if (io_init(&bus_config) == EXIT_FAILURE)
+	if (io_init(&io_configuration) == EXIT_FAILURE)
 	{
 		syslog(LOG_ERR, "Could not initialize IO subsystem.");
 		exit(EXIT_FAILURE);
 	}
 
 	http_server = start_http_server((const char **) http_options, cnt_option,
-			&bus_config);
+			&io_configuration);
 
 	for (;;)
 	{
@@ -141,7 +143,8 @@ static void signal_handler(int sig)
 	}
 
 	syslog(LOG_INFO, "Shutting down IO subsystem.");
-	io_deinit(&bus_config);
+	io_deinit(&io_configuration);
+	conf_deinit(&io_configuration);
 
 	for (cnt = 0; cnt < MAX_NUM_CONF; cnt++)
 	{
