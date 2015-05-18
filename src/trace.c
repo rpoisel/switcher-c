@@ -11,6 +11,7 @@ static char initialized = 0;
 int trace_printf(const char* format, ...)
 {
 	va_list ap;
+	int retVal = 0;
 	static char* env_debug = NULL;
 
 	if (!initialized)
@@ -23,5 +24,7 @@ int trace_printf(const char* format, ...)
 		return 0;
 	}
 	va_start(ap, format);
-	return vprintf(format, ap);
+	retVal = vfprintf(stdout, format, ap);
+	fflush(stdout);
+	return retVal;
 }

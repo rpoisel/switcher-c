@@ -8,9 +8,9 @@
 /* 3rd party libraries */
 
 /* own includes */
-#include "http.h"
-
-#include "io.h"
+#include <trace.h>
+#include <http.h>
+#include <io.h>
 
 #define BUF_LEN 1024
 #define URI_DELIM "/"
@@ -29,7 +29,7 @@ typedef enum
 static int event_handler(struct mg_connection* conn, enum mg_event ev);
 static int http_request_handler(struct mg_connection *conn);
 static int websocket_request_handler(struct mg_connection *conn);
-static void print_debug_request(const char* uri, io_data* parts,
+static void print_request(const char* uri, io_data* parts,
 		request_type type);
 static request_type parse_uri(const char* uri, io_data* parts);
 
@@ -81,9 +81,7 @@ static int http_request_handler(struct mg_connection *conn)
 	/* process request parameters */
 	type = parse_uri(conn->uri, &parts);
 
-#if 1
-	print_debug_request(conn->uri, &parts, type);
-#endif
+	print_request(conn->uri, &parts, type);
 
 	/* forward received values to I2C subsystem */
 	if (type != REQUEST_ERR)
@@ -202,14 +200,13 @@ static request_type parse_uri(const char* uri, io_data* parts)
 	return result;
 }
 
-static void print_debug_request(const char* uri, io_data* parts,
+static void print_request(const char* uri, io_data* parts,
 		request_type type)
 {
 	char message[BUF_LEN] =
 	{ '\0' };
 	int cnt = 0;
 
-	cnt += snprintf(message, BUF_LEN, "URI: %s, ", uri);
 	switch (type)
 	{
 	case REQUEST_GET:
@@ -219,12 +216,13 @@ static void print_debug_request(const char* uri, io_data* parts,
 		cnt += snprintf(message + cnt, BUF_LEN, "Request: SET, ");
 		break;
 	default:
-		cnt += snprintf(message + cnt, BUF_LEN, "Request: ERR");
+		cnt += snprintf(message + cnt, BUF_LEN, "Request: ERR, ");
 		break;
 	}
+	cnt += snprintf(message + cnt, BUF_LEN, "URI: %s", uri);
 	if (REQUEST_ERR != type)
 	{
-		cnt += snprintf(message + cnt, BUF_LEN, "Bus: %d, Device: %d",
+		cnt += snprintf(message + cnt, BUF_LEN, ", Bus: %d, Device: %d",
 				parts->idx_bus, parts->idx_dev);
 		if (REQUEST_SET == type)
 		{
@@ -233,4 +231,5 @@ static void print_debug_request(const char* uri, io_data* parts,
 		}
 	}
 	syslog(LOG_INFO, "%s", message);
+	TRACE(printf("%s\n", message));
 }
