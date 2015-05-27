@@ -35,7 +35,7 @@
 								<option id="gnu.c.compiler.option.debugging.level.2069563649" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.dialect.std.604562570" name="Language standard" superClass="gnu.c.compiler.option.dialect.std" value="gnu.c.compiler.dialect.default" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.warnings.extrawarn.255797273" name="Extra warnings (-Wextra)" superClass="gnu.c.compiler.option.warnings.extrawarn" value="true" valueType="boolean"/>
-								<option id="gnu.c.compiler.option.misc.other.272775900" superClass="gnu.c.compiler.option.misc.other" value="-c -fmessage-length=0 -Wno-unused-parameter" valueType="string"/>
+								<option id="gnu.c.compiler.option.misc.other.272775900" name="Other flags" superClass="gnu.c.compiler.option.misc.other" value="-c -fmessage-length=0 -Wno-unused-parameter" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1835942915" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.425560570" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">
@@ -83,7 +83,7 @@
 					<folderInfo id="0.2058322444.108243205." name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.cross.base.1323873361" name="Cross GCC" resourceTypeBasedDiscovery="true" superClass="cdt.managedbuild.toolchain.gnu.cross.base">
 							<option id="cdt.managedbuild.option.gnu.cross.prefix.1757363075" name="Prefix" superClass="cdt.managedbuild.option.gnu.cross.prefix" value="arm-linux-gnueabihf-" valueType="string"/>
-							<option id="cdt.managedbuild.option.gnu.cross.path.1608420935" name="Path" superClass="cdt.managedbuild.option.gnu.cross.path" value="/usr/local/toolchains/gcc-arm-bcm2708/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin" valueType="string"/>
+							<option id="cdt.managedbuild.option.gnu.cross.path.1608420935" name="Path" superClass="cdt.managedbuild.option.gnu.cross.path" value="/usr/local/toolchains/arm-bcm2708/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin/" valueType="string"/>
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.targetPlatform.gnu.cross.1422015996" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
 							<builder buildPath="${workspace_loc:/switcher-c}/debug_linux_raspbian.linux" id="cdt.managedbuild.builder.gnu.cross.434348909" keepEnvironmentInBuildfile="false" name="Gnu Make Builder" superClass="cdt.managedbuild.builder.gnu.cross"/>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.1435102332" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler">
@@ -139,10 +139,10 @@
 		</configuration>
 		<configuration configurationName="debug_linux_x64.linux"/>
 		<configuration configurationName="debug_linux_raspbian.linux"/>
-		<configuration configurationName="Debug"/>
 		<configuration configurationName="Raspbian Cross">
 			<resource resourceType="PROJECT" workspacePath="/switcher-c"/>
 		</configuration>
+		<configuration configurationName="Debug"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets">
@@ -187,7 +187,7 @@
 					<parser enabled="true"/>
 				</buildOutputProvider>
 				<scannerInfoProvider id="specsFile">
-					<runAction arguments="-E -P -v -dD &quot;${plugin_state_location}/specs.cpp&quot;" command="/usr/local/toolchains/gcc-arm-bcm2708/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin/arm-linux-gnueabihf-g++" useDefault="true"/>
+					<runAction arguments="-E -P -v -dD &quot;${plugin_state_location}/specs.cpp&quot;" command="/usr/local/toolchains/arm-bcm2708/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin/arm-linux-gnueabihf-g++" useDefault="true"/>
 					<parser enabled="true"/>
 				</scannerInfoProvider>
 			</profile>
@@ -197,7 +197,7 @@
 					<parser enabled="true"/>
 				</buildOutputProvider>
 				<scannerInfoProvider id="specsFile">
-					<runAction arguments="-E -P -v -dD &quot;${plugin_state_location}/specs.c&quot;" command="/usr/local/toolchains/gcc-arm-bcm2708/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin/arm-linux-gnueabihf-gcc" useDefault="true"/>
+					<runAction arguments="-E -P -v -dD &quot;${plugin_state_location}/specs.c&quot;" command="/usr/local/toolchains/arm-bcm2708/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin/arm-linux-gnueabihf-gcc" useDefault="true"/>
 					<parser enabled="true"/>
 				</scannerInfoProvider>
 			</profile>
@@ -216,7 +216,7 @@
 					<parser enabled="true"/>
 				</buildOutputProvider>
 				<scannerInfoProvider id="specsFile">
-					<runAction arguments="-E -P -v -dD &quot;${plugin_state_location}/specs.c&quot;" command="/usr/local/toolchains/gcc-arm-bcm2708/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin/arm-linux-gnueabihf-gcc" useDefault="true"/>
+					<runAction arguments="-E -P -v -dD &quot;${plugin_state_location}/specs.c&quot;" command="/usr/local/toolchains/arm-bcm2708/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin/arm-linux-gnueabihf-gcc" useDefault="true"/>
 					<parser enabled="true"/>
 				</scannerInfoProvider>
 			</profile>

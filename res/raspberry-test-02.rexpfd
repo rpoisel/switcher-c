@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<rexpfd>
+    <destination path="lca-ws-12.raspberry-test-02:/tmp/bridge"/>
+    <options createDirectoryStructure="false" createSelectedOnly="true" descriptionFilePath="/switcher-c/res/raspberry-test-02.rexpfd" overWriteExistingFiles="false" reviewSynchronize="false" saveSettings="true"/>
+    <selectedElements>
+        <folder path="/switcher-c/config"/>
+    </selectedElements>
+</rexpfd>
