@@ -24,10 +24,10 @@ typedef enum bus_type
 typedef struct dev_drv
 {
 	uint32_t (*init)(io_bus* bus, io_dev* dev);
-	int (*read)(io_bus* bus, io_dev* dev, uint32_t* value,
+	int (*read)(io_bus* bus, io_dev* dev, value_t* value,
 				int (*cb_error)(char* error_msg, char* buf, int buf_size),
 				char* buf_msg, int buf_size_msg);
-	int (*write)(io_bus* bus, io_dev* dev, const uint32_t* value,
+	int (*write)(io_bus* bus, io_dev* dev, const value_t* value,
 				int (*cb_error)(char* error_msg, char* buf, int buf_size),
 				char* buf_msg, int buf_size_msg);
 	uint32_t (*deinit)(io_bus* bus, io_dev* dev);
@@ -80,12 +80,22 @@ typedef struct io_config
 	io_bus busses[MAX_BUSSES];
 } io_config;
 
+typedef int32_t idx_t;
+#define IDX_INVALID -1
+
 typedef struct io_data
 {
-	unsigned idx_bus;
-	unsigned idx_dev;
-	uint32_t value;
+	idx_t idx_bus;
+	idx_t idx_dev;
+	idx_t idx_sub_dev;
+	value_t value; /* TODO typedef type of value */
 } io_data;
+
+#define INIT_IO_DATA(p) \
+	p->idx_bus = IDX_INVALID; \
+	p->idx_dev = IDX_INVALID; \
+	p->idx_sub_dev = IDX_INVALID; \
+	p->value = 0;
 
 int perform_io(io_config* config, io_data* data, io_cmd cmd,
 		int (*cb_success)(io_data* data, char* buf, int buf_size),

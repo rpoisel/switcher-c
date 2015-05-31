@@ -8,11 +8,14 @@
 #ifndef IO_FWD_H_
 #define IO_FWD_H_
 
+#include <stdint.h>
+
 typedef struct io_config io_config;
 typedef struct dev_drv dev_drv;
 typedef struct io_bus io_bus;
 typedef struct bus_drv_ bus_drv;
 typedef struct io_dev io_dev;
 typedef struct io_data io_data;
+typedef uint32_t value_t;
 
 #endif /* IO_FWD_H_ */

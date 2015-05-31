@@ -16,10 +16,10 @@ typedef struct mcp23017_data_
 } mcp23017_data;
 
 static uint32_t mcp23017_init(io_bus* bus, io_dev* dev);
-static int mcp23017_write(io_bus* bus, io_dev* dev, const uint32_t* value,
+static int mcp23017_write(io_bus* bus, io_dev* dev, const value_t* value,
 		int (*cb_error)(char* error_msg, char* buf, int buf_size),
 		char* buf_msg, int buf_size_msg);
-static int mcp23017_read(io_bus* bus, io_dev* dev, uint32_t* value,
+static int mcp23017_read(io_bus* bus, io_dev* dev, value_t* value,
 		int (*cb_error)(char* error_msg, char* buf, int buf_size),
 		char* buf_msg, int buf_size_msg);
 static uint32_t mcp23017_deinit(io_bus* bus, io_dev* dev);
@@ -40,7 +40,7 @@ static uint32_t mcp23017_init(io_bus* bus, io_dev* dev)
 }
 
 /* write IOs */
-static int mcp23017_write(io_bus *bus, io_dev* dev, const uint32_t* value,
+static int mcp23017_write(io_bus *bus, io_dev* dev, const value_t* value,
 		int (*cb_error)(char* error_msg, char* buf, int buf_size),
 		char* buf_msg, int buf_size_msg)
 {
@@ -85,7 +85,7 @@ static int mcp23017_write(io_bus *bus, io_dev* dev, const uint32_t* value,
 }
 
 /* read IOs */
-static int mcp23017_read(io_bus* bus, io_dev* dev, uint32_t* value,
+static int mcp23017_read(io_bus* bus, io_dev* dev, value_t* value,
 		int (*cb_error)(char* error_msg, char* buf, int buf_size),
 		char* buf_msg, int buf_size_msg)
 {

@@ -14,24 +14,32 @@
 
 #define BUF_LEN 1024
 #define URI_DELIM "/"
+#define DEV_DELIM "."
 
 typedef enum
 {
 	REQUEST_ERR, REQUEST_GET, REQUEST_SET,
-} request_type;
+} request_t;
 
 typedef enum
 {
 	STAGE_BUS = 0, STAGE_DEV, STAGE_VALUE
-} uri_stages;
+} uri_stage_t;
+
+typedef enum
+{
+	RC_IO_OK, RC_IO_ERROR
+} io_success_t;
 
 /* static function declarations */
 static int event_handler(struct mg_connection* conn, enum mg_event ev);
 static int http_request_handler(struct mg_connection *conn);
 static int websocket_request_handler(struct mg_connection *conn);
-static void print_request(const char* uri, io_data* parts,
-		request_type type);
-static request_type parse_uri(const char* uri, io_data* parts);
+static void print_request(const char* uri, io_data* parts, request_t type);
+static request_t parse_uri(const char* uri, io_data* parts);
+static io_success_t parse_bus(const char* token, idx_t* bus_idx);
+static io_success_t parse_dev(char* token, idx_t* dev_idx, idx_t* sub_dev_idx);
+static io_success_t parse_value(const char* token, value_t* value);
 
 struct mg_server* start_http_server(const char *http_options[],
 		int num_http_options, io_config* bus_config)
@@ -76,7 +84,7 @@ static int http_request_handler(struct mg_connection *conn)
 	{ '\0' };
 	io_config* io_bus_config = (io_config*) conn->server_param;
 	io_data parts;
-	request_type type = REQUEST_ERR;
+	request_t type = REQUEST_ERR;
 
 	/* process request parameters */
 	type = parse_uri(conn->uri, &parts);
@@ -133,8 +141,9 @@ int io_data_to_json(io_data* data, char* buf, int buf_size)
 	return snprintf(buf, buf_size, "callback({ "
 			"\"bus_idx\": \"%d\", "
 			"\"dev_idx\": %d, "
+			"\"dev_sub_idx\": %d, "
 			"\"value\": \"%x\""
-			" })", data->idx_bus, data->idx_dev, data->value);
+			" })", data->idx_bus, data->idx_dev, data->idx_sub_dev, data->value);
 }
 
 int error_to_json(char* error_msg, char* buf, int buf_size)
@@ -144,54 +153,51 @@ int error_to_json(char* error_msg, char* buf, int buf_size)
 			" }", error_msg);
 }
 
-static request_type parse_uri(const char* uri, io_data* parts)
+static request_t parse_uri(const char* uri, io_data* parts)
 {
-	request_type result = REQUEST_ERR;
+	request_t result = REQUEST_ERR;
 
 	char buf_uri[BUF_LEN];
 
 	char* rest;
 	char* token = NULL;
 	unsigned cnt_stage = 0;
-	long number = 0;
-	char* endptr = NULL;
-	int base = 10;
 
-	/* circumvent const => unconst cast */
+	INIT_IO_DATA(parts)
+
+	/* strtok will modify its buffer, therefore copy it beforehand */
 	strncpy(buf_uri, uri, BUF_LEN);
 
 	token = strtok_r(buf_uri, URI_DELIM, &rest);
 	while (cnt_stage <= STAGE_VALUE && token != NULL)
 	{
-		base = (cnt_stage == STAGE_VALUE ? 16 : 10);
-
-		endptr = NULL;
-		number = strtol(token, &endptr, base);
-
-		if ((errno == ERANGE && (number == LONG_MAX || number == LONG_MIN))
-				|| endptr == token)
-		{
-			return REQUEST_ERR;
-		}
-
 		/* assign parsed number to current stage's counterpart in data structure */
 		switch (cnt_stage)
 		{
 		case STAGE_BUS:
-			parts->idx_bus = number;
+			if (parse_bus(token, &(parts->idx_bus)) != RC_IO_OK)
+			{
+				return REQUEST_ERR;
+			}
 			break;
 		case STAGE_DEV:
-			parts->idx_dev = number;
+			if (parse_dev(token, &(parts->idx_dev), &(parts->idx_sub_dev))
+					!= RC_IO_OK)
+			{
+				return REQUEST_ERR;
+			}
 			result = REQUEST_GET;
 			break;
 		case STAGE_VALUE:
-			parts->value = number;
+			if (parse_value(token, &(parts->value)) != RC_IO_OK)
+			{
+				return REQUEST_ERR;
+			}
 			result = REQUEST_SET;
 			break;
 		default:
 			/* illegal stage */
-			result = REQUEST_ERR;
-			break;
+			return REQUEST_ERR;
 		}
 		++cnt_stage;
 		token = strtok_r(NULL, URI_DELIM, &rest);
@@ -200,8 +206,63 @@ static request_type parse_uri(const char* uri, io_data* parts)
 	return result;
 }
 
-static void print_request(const char* uri, io_data* parts,
-		request_type type)
+static io_success_t parse_bus(const char* token, idx_t* bus_idx)
+{
+	char* endptr = NULL;
+	*bus_idx = strtol(token, &endptr, 10);
+
+	if ((errno == ERANGE && (*bus_idx == LONG_MAX || *bus_idx == LONG_MIN))
+			|| endptr == token)
+	{
+		return RC_IO_ERROR;
+	}
+	return RC_IO_OK;
+}
+
+static io_success_t parse_dev(char* token, idx_t* dev_idx, idx_t* sub_dev_idx)
+{
+	char* dev_token = NULL;
+	char* saveptr = NULL;
+	char* endptr = NULL;
+	dev_token = strtok_r(token, DEV_DELIM, &saveptr);
+
+	*dev_idx = strtol(dev_token, &endptr, 10);
+
+	if ((errno == ERANGE && (*dev_idx == LONG_MAX || *dev_idx == LONG_MIN))
+			|| endptr == token)
+	{
+		return RC_IO_ERROR;
+	}
+
+	dev_token = strtok_r(NULL, DEV_DELIM, &saveptr);
+	if (dev_token != NULL)
+	{
+		*sub_dev_idx = strtol(dev_token, &endptr, 10);
+
+		if ((errno == ERANGE
+				&& (*sub_dev_idx == LONG_MAX || *sub_dev_idx == LONG_MIN))
+				|| endptr == token)
+		{
+			return RC_IO_ERROR;
+		}
+	}
+
+	return RC_IO_OK;
+}
+
+static io_success_t parse_value(const char* token, value_t* value)
+{
+	char* endptr = NULL;
+	*value = strtoul(token, &endptr, 16);
+
+	if (*endptr != '\0')
+	{
+		return RC_IO_ERROR;
+	}
+	return RC_IO_OK;
+}
+
+static void print_request(const char* uri, io_data* parts, request_t type)
 {
 	char message[BUF_LEN] =
 	{ '\0' };
@@ -224,6 +285,11 @@ static void print_request(const char* uri, io_data* parts,
 	{
 		cnt += snprintf(message + cnt, BUF_LEN, ", Bus: %d, Device: %d",
 				parts->idx_bus, parts->idx_dev);
+		if (parts->idx_sub_dev != IDX_INVALID)
+		{
+			cnt += snprintf(message + cnt, BUF_LEN, ", Sub-Device: %d",
+					parts->idx_sub_dev);
+		}
 		if (REQUEST_SET == type)
 		{
 			cnt += snprintf(message + cnt, BUF_LEN, ", Value: 0x%02X",

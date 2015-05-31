@@ -67,7 +67,8 @@ int io_init(io_config* config)
 	for (cnt_bus = 0; cnt_bus < config->num_busses; cnt_bus++)
 	{
 		io_bus* current_bus = config->busses + cnt_bus;
-		if (NULL != current_bus->drv_handle && NULL != current_bus->drv_handle->open)
+		if (NULL != current_bus->drv_handle
+				&& NULL != current_bus->drv_handle->open)
 		{
 			current_bus->drv_handle->open(current_bus);
 		}
@@ -102,7 +103,8 @@ int io_deinit(io_config* config)
 				current_dev->drv_handle->deinit(current_bus, current_dev);
 			}
 		}
-		if (NULL != current_bus->drv_handle && NULL != current_bus->drv_handle->close)
+		if (NULL != current_bus->drv_handle
+				&& NULL != current_bus->drv_handle->close)
 		{
 			current_bus->drv_handle->close(current_bus);
 		}
@@ -116,9 +118,11 @@ int perform_io(io_config* config, io_data* data, io_cmd cmd,
 		int (*cb_error)(char* error_msg, char* buf, int buf_size), char* buf,
 		int buf_size)
 {
-	if (data->idx_bus < config->num_busses)
+	if (data->idx_bus != IDX_INVALID && data->idx_bus < config->num_busses)
 	{
-		if (data->idx_dev < (config->busses + data->idx_bus)->num_devices)
+		if (data->idx_dev != IDX_INVALID
+				&& data->idx_dev
+						< (config->busses + data->idx_bus)->num_devices)
 		{
 			if (cmd == CMD_WRITE)
 			{

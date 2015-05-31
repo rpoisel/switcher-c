@@ -14,11 +14,11 @@
 
 static uint32_t piface_init(io_bus* bus, io_dev* dev);
 static int piface_write(io_bus* bus, io_dev* dev,
-		const uint32_t* value,
+		const value_t* value,
 		int (*cb_error)(char* error_msg, char* buf, int buf_size),
 		char* buf_msg, int buf_size_msg);
 static int piface_read(io_bus* bus, io_dev* dev,
-		uint32_t* value,
+		value_t* value,
 		int (*cb_error)(char* error_msg, char* buf, int buf_size),
 		char* buf_msg, int buf_size_msg);
 static uint32_t piface_deinit(io_bus* bus, io_dev* dev);
@@ -33,7 +33,7 @@ dev_drv* get_piface_drv()
 }
 
 static int piface_write(io_bus* bus /* ignored */, io_dev* dev /* ignored */,
-		const uint32_t* value,
+		const value_t* value,
 		int (*cb_error)(char* error_msg, char* buf, int buf_size),
 		char* buf_msg, int buf_size_msg)
 {
@@ -52,7 +52,7 @@ static uint32_t piface_init(io_bus* bus, io_dev* dev)
 }
 
 static int piface_read(io_bus* bus /* ignored */, io_dev* dev /* ignored */,
-		uint32_t* value,
+		value_t* value,
 		int (*cb_error)(char* error_msg, char* buf, int buf_size),
 		char* buf_msg, int buf_size_msg)
 {
