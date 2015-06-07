@@ -61,8 +61,8 @@ int conf_deinit(io_config* config)
 
 int io_init(io_config* config)
 {
-	unsigned cnt_bus = 0;
-	unsigned cnt_dev = 0;
+	idx_t cnt_bus = 0;
+	idx_t cnt_dev = 0;
 
 	for (cnt_bus = 0; cnt_bus < config->num_busses; cnt_bus++)
 	{
@@ -88,8 +88,8 @@ int io_init(io_config* config)
 
 int io_deinit(io_config* config)
 {
-	unsigned cnt_bus = 0;
-	unsigned cnt_dev = 0;
+	idx_t cnt_bus = 0;
+	idx_t cnt_dev = 0;
 
 	for (cnt_bus = 0; cnt_bus < config->num_busses; cnt_bus++)
 	{

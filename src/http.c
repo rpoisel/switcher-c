@@ -211,8 +211,7 @@ static io_success_t parse_bus(const char* token, idx_t* bus_idx)
 	char* endptr = NULL;
 	*bus_idx = strtol(token, &endptr, 10);
 
-	if ((errno == ERANGE && (*bus_idx == LONG_MAX || *bus_idx == LONG_MIN))
-			|| endptr == token)
+    if (*endptr != '\0')
 	{
 		return RC_IO_ERROR;
 	}
@@ -228,8 +227,7 @@ static io_success_t parse_dev(char* token, idx_t* dev_idx, idx_t* sub_dev_idx)
 
 	*dev_idx = strtol(dev_token, &endptr, 10);
 
-	if ((errno == ERANGE && (*dev_idx == LONG_MAX || *dev_idx == LONG_MIN))
-			|| endptr == token)
+	if (endptr != '\0')
 	{
 		return RC_IO_ERROR;
 	}
@@ -239,9 +237,7 @@ static io_success_t parse_dev(char* token, idx_t* dev_idx, idx_t* sub_dev_idx)
 	{
 		*sub_dev_idx = strtol(dev_token, &endptr, 10);
 
-		if ((errno == ERANGE
-				&& (*sub_dev_idx == LONG_MAX || *sub_dev_idx == LONG_MIN))
-				|| endptr == token)
+		if (endptr != '\0')
 		{
 			return RC_IO_ERROR;
 		}

@@ -61,9 +61,12 @@ typedef struct bus_drv_
 	int (*close)(io_bus* bus);
 } bus_drv;
 
+typedef int32_t idx_t;
+#define IDX_INVALID -1
+
 typedef struct io_bus
 {
-	unsigned num_devices;
+	idx_t num_devices;
 	io_dev devices[MAX_IO_DEVICES];
 #if 0
 	bus_type type;
@@ -76,12 +79,9 @@ typedef struct io_bus
 
 typedef struct io_config
 {
-	unsigned num_busses;
+	idx_t num_busses;
 	io_bus busses[MAX_BUSSES];
 } io_config;
-
-typedef int32_t idx_t;
-#define IDX_INVALID -1
 
 typedef struct io_data
 {
