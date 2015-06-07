@@ -120,89 +120,78 @@ int perform_io(io_config* config, io_data* data, io_cmd cmd,
 {
 	int num_read = 0;
 	value_t value = data->value;
-	if (data->idx_bus != IDX_INVALID && data->idx_bus < config->num_busses)
+
+	if (data->idx_bus == IDX_INVALID || data->idx_bus >= config->num_busses)
 	{
-		if (data->idx_dev != IDX_INVALID
-				&& data->idx_dev
-						< (config->busses + data->idx_bus)->num_devices)
+		cb_error("Bus ID not existing.", buf, buf_size);
+		return EXIT_FAILURE;
+	}
+
+	if (data->idx_dev == IDX_INVALID
+			|| data->idx_dev >= (config->busses + data->idx_bus)->num_devices)
+	{
+		cb_error("Device ID not existing.", buf, buf_size);
+		return EXIT_FAILURE;
+	}
+
+	if (cmd != CMD_WRITE && cmd != CMD_READ)
+	{
+		cb_error("Illegal command.", buf, buf_size);
+		return EXIT_FAILURE;
+	}
+
+	if (cmd == CMD_WRITE)
+	{
+		if (data->idx_sub_dev != IDX_INVALID)
 		{
-			if (cmd == CMD_WRITE)
+			num_read = ((config->busses + data->idx_bus)->devices
+					+ data->idx_dev)->drv_handle->read(
+					(config->busses + data->idx_bus),
+					((config->busses + data->idx_bus)->devices + data->idx_dev),
+					&value, cb_error, buf, buf_size);
+			if (num_read <= 0)
 			{
-				if (data->idx_sub_dev != IDX_INVALID)
-				{
-					num_read = ((config->busses + data->idx_bus)->devices
-							+ data->idx_dev)->drv_handle->read(
-							(config->busses + data->idx_bus),
-							((config->busses + data->idx_bus)->devices
-									+ data->idx_dev), &value, cb_error, buf,
-							buf_size);
-					if (num_read > 0)
-					{
-						if (data->value == 0)
-						{
-							value &= ~(1 << data->idx_sub_dev);
-						}
-						else
-						{
-							value |= 1 << data->idx_sub_dev;
-						}
-					}
-					else
-					{
-						cb_error("Could not read from device.", buf, buf_size);
-					}
-				}
-				if ((data->idx_sub_dev == IDX_INVALID
-						|| (data->idx_sub_dev != IDX_INVALID && num_read > 0))
-						&& ((config->busses + data->idx_bus)->devices
-								+ data->idx_dev)->drv_handle->write(
-								(config->busses + data->idx_bus),
-								((config->busses + data->idx_bus)->devices
-										+ data->idx_dev), &value, cb_error, buf,
-								buf_size) > 0)
-				{
-					cb_success(data, buf, buf_size);
-				}
+				cb_error("Could not read from device.", buf, buf_size);
+				return EXIT_FAILURE;
 			}
-			else if (cmd == CMD_READ)
+			if (data->value)
 			{
-				if (((config->busses + data->idx_bus)->devices + data->idx_dev)->drv_handle->read(
-						(config->busses + data->idx_bus),
-						((config->busses + data->idx_bus)->devices
-								+ data->idx_dev), &data->value, cb_error, buf,
-						buf_size) > 0)
-				{
-					if (data->idx_sub_dev != IDX_INVALID)
-					{
-						if (data->idx_sub_dev >= 0
-								&& data->idx_sub_dev
-										< (sizeof(data->value) * 8))
-						{
-							data->value = (data->value >> data->idx_sub_dev)
-									& 1;
-						}
-						else
-						{
-							cb_error("Invalid sub device-index given.", buf,
-									buf_size);
-						}
-					}
-					cb_success(data, buf, buf_size);
-				}
+				value |= 1 << data->idx_sub_dev;
 			}
 			else
 			{
-				cb_error("Illegal command.", buf, buf_size);
+				value &= ~(1 << data->idx_sub_dev);
 			}
 		}
-		else
+		if (((config->busses + data->idx_bus)->devices + data->idx_dev)->drv_handle->write(
+				(config->busses + data->idx_bus),
+				((config->busses + data->idx_bus)->devices + data->idx_dev),
+				&value, cb_error, buf, buf_size) > 0)
 		{
-			cb_error("Device ID not existing.", buf, buf_size);
+			cb_success(data, buf, buf_size);
 		}
 	}
 	else
 	{
-		cb_error("Bus ID not existing.", buf, buf_size);
+		if (((config->busses + data->idx_bus)->devices + data->idx_dev)->drv_handle->read(
+				(config->busses + data->idx_bus),
+				((config->busses + data->idx_bus)->devices + data->idx_dev),
+				&data->value, cb_error, buf, buf_size) > 0)
+		{
+			if (data->idx_sub_dev != IDX_INVALID)
+			{
+				if (data->idx_sub_dev >= 0
+						&& data->idx_sub_dev < (sizeof(data->value) * 8))
+				{
+					data->value = (data->value >> data->idx_sub_dev) & 1;
+				}
+				else
+				{
+					cb_error("Invalid sub device-index given.", buf, buf_size);
+				}
+			}
+			cb_success(data, buf, buf_size);
+		}
 	}
 
 	return EXIT_SUCCESS;
