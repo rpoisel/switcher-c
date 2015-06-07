@@ -118,6 +118,8 @@ int perform_io(io_config* config, io_data* data, io_cmd cmd,
 		int (*cb_error)(char* error_msg, char* buf, int buf_size), char* buf,
 		int buf_size)
 {
+	int num_read = 0;
+	value_t value = data->value;
 	if (data->idx_bus != IDX_INVALID && data->idx_bus < config->num_busses)
 	{
 		if (data->idx_dev != IDX_INVALID
@@ -126,15 +128,41 @@ int perform_io(io_config* config, io_data* data, io_cmd cmd,
 		{
 			if (cmd == CMD_WRITE)
 			{
-				if (((config->busses + data->idx_bus)->devices + data->idx_dev)->drv_handle->write(
-						(config->busses + data->idx_bus),
-						((config->busses + data->idx_bus)->devices
-								+ data->idx_dev), &data->value, cb_error, buf,
-						buf_size) > 0)
+				if (data->idx_sub_dev != IDX_INVALID)
+				{
+					num_read = ((config->busses + data->idx_bus)->devices
+							+ data->idx_dev)->drv_handle->read(
+							(config->busses + data->idx_bus),
+							((config->busses + data->idx_bus)->devices
+									+ data->idx_dev), &value, cb_error, buf,
+							buf_size);
+					if (num_read > 0)
+					{
+						if (data->value == 0)
+						{
+							value &= ~(1 << data->idx_sub_dev);
+						}
+						else
+						{
+							value |= 1 << data->idx_sub_dev;
+						}
+					}
+					else
+					{
+						cb_error("Could not read from device.", buf, buf_size);
+					}
+				}
+				if ((data->idx_sub_dev == IDX_INVALID
+						|| (data->idx_sub_dev != IDX_INVALID && num_read > 0))
+						&& ((config->busses + data->idx_bus)->devices
+								+ data->idx_dev)->drv_handle->write(
+								(config->busses + data->idx_bus),
+								((config->busses + data->idx_bus)->devices
+										+ data->idx_dev), &value, cb_error, buf,
+								buf_size) > 0)
 				{
 					cb_success(data, buf, buf_size);
 				}
-				/* error case has to be handled by write() function call */
 			}
 			else if (cmd == CMD_READ)
 			{
@@ -144,6 +172,21 @@ int perform_io(io_config* config, io_data* data, io_cmd cmd,
 								+ data->idx_dev), &data->value, cb_error, buf,
 						buf_size) > 0)
 				{
+					if (data->idx_sub_dev != IDX_INVALID)
+					{
+						if (data->idx_sub_dev >= 0
+								&& data->idx_sub_dev
+										< (sizeof(data->value) * 8))
+						{
+							data->value = (data->value >> data->idx_sub_dev)
+									& 1;
+						}
+						else
+						{
+							cb_error("Invalid sub device-index given.", buf,
+									buf_size);
+						}
+					}
 					cb_success(data, buf, buf_size);
 				}
 			}

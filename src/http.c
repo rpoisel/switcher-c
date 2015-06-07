@@ -227,7 +227,7 @@ static io_success_t parse_dev(char* token, idx_t* dev_idx, idx_t* sub_dev_idx)
 
 	*dev_idx = strtol(dev_token, &endptr, 10);
 
-	if (endptr != '\0')
+	if (*endptr != '\0')
 	{
 		return RC_IO_ERROR;
 	}
@@ -237,7 +237,7 @@ static io_success_t parse_dev(char* token, idx_t* dev_idx, idx_t* sub_dev_idx)
 	{
 		*sub_dev_idx = strtol(dev_token, &endptr, 10);
 
-		if (endptr != '\0')
+		if (*endptr != '\0')
 		{
 			return RC_IO_ERROR;
 		}
