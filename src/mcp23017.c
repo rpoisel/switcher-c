@@ -1,7 +1,7 @@
+#include <io_i2c_linux.h>
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "io_i2c.h"
 #include "io.h"
 #include "mcp23017.h"
 
@@ -39,47 +39,65 @@ static uint32_t mcp23017_init(io_bus* bus, io_dev* dev)
 	return 0;
 }
 
+static void mcp23017_configure_io(io_bus *bus, io_dev *dev,
+		mcp23017_data* dev_data, mcp23017_io_state desired_state,
+		int (*cb_error)(char* error_msg, char* buf, int buf_size),
+		char* buf_msg, int buf_size_msg)
+{
+	uint8_t io_states = 0x00 /* all outputs */;
+	dev_data->io_state = MCP23017_NONE;
+
+	if (desired_state != MCP23017_WRITE && desired_state != MCP23017_READ)
+	{
+		return;
+	}
+
+	io_states =
+			desired_state == MCP23017_WRITE ?
+					0x00 /* all outputs */: 0xFF /* all inputs */;
+
+	if (i2c_linux_write_byte_data(bus, dev, 0x00 /* IODIRA */, io_states,
+			cb_error, buf_msg, buf_size_msg) == 0)
+	{
+		if (i2c_linux_write_byte_data(bus, dev, 0x01 /* IODIRB */, io_states,
+				cb_error, buf_msg, buf_size_msg) == 0)
+		{
+			dev_data->io_state = desired_state;
+		}
+	}
+
+}
+
 /* write IOs */
 static int mcp23017_write(io_bus *bus, io_dev* dev, const value_t* value,
 		int (*cb_error)(char* error_msg, char* buf, int buf_size),
 		char* buf_msg, int buf_size_msg)
 {
-	/* check whether device has been opened in write mode and configure accordingly if necessary */
 	uint16_t states = *value;
-	uint8_t i2c_cmds[2] =
-	{ 0 };
-	ssize_t data_written = 0;
 	mcp23017_data* dev_data = dev->dev_data;
 	if (dev_data->io_state != MCP23017_WRITE)
 	{
-		i2c_cmds[0] = 0x00; /* IODIRA */
-		i2c_cmds[1] = 0x00; /* all outputs */
-		data_written = bus->drv_handle->write(bus, dev, i2c_cmds,
-				sizeof(i2c_cmds), cb_error, buf_msg, buf_size_msg);
-		if (sizeof(i2c_cmds) == data_written)
-		{
-			i2c_cmds[0] = 0x01; /* IODIRB */
-			i2c_cmds[1] = 0x00; /* all outputs */
-			data_written = bus->drv_handle->write(bus, dev, i2c_cmds,
-					sizeof(i2c_cmds), cb_error, buf_msg, buf_size_msg);
-			if (sizeof(i2c_cmds) == data_written)
-			{
-				dev_data->io_state = MCP23017_WRITE;
-			}
-		}
+		mcp23017_configure_io(bus, dev, dev_data, MCP23017_WRITE, cb_error,
+				buf_msg, buf_size_msg);
 	}
 	if (MCP23017_WRITE == dev_data->io_state)
 	{
-		data_written = 0;
-		i2c_cmds[0] = 0x14; /* OLATA */
-		i2c_cmds[1] = states & 0x00FF; /* LSB */
-		data_written += bus->drv_handle->write(bus, dev, i2c_cmds, sizeof(i2c_cmds),
-				cb_error, buf_msg, buf_size_msg);
-		i2c_cmds[0] = 0x15; /* OLATB */
-		i2c_cmds[1] = (states & 0xFF00) >> 8; /* MSB */
-		data_written += bus->drv_handle->write(bus, dev, i2c_cmds, sizeof(i2c_cmds),
-				cb_error, buf_msg, buf_size_msg);
-		return data_written;
+		if (i2c_linux_write_byte_data(bus, dev, 0x14 /* OLATA */,
+				((uint8_t) states & 0x00FF), cb_error, buf_msg, buf_size_msg)
+				== 0)
+		{
+			if (i2c_linux_write_byte_data(bus, dev, 0x15 /* OLATB */,
+					((uint8_t) ((states & 0xFF00) >> 8)), cb_error, buf_msg,
+					buf_size_msg) == 0)
+			{
+				return 1;
+			}
+		}
+	}
+	else
+	{
+		cb_error("Could not configure given MCP23017 in write mode", buf_msg,
+				buf_size_msg);
 	}
 	return 0;
 }
@@ -89,16 +107,36 @@ static int mcp23017_read(io_bus* bus, io_dev* dev, value_t* value,
 		int (*cb_error)(char* error_msg, char* buf, int buf_size),
 		char* buf_msg, int buf_size_msg)
 {
-	/* check whether device has been opened in read mode and configure accordingly if necessary */
-#if 0
-	uint8_t states = 0;
-	int result = i2c_read(fh, address, &states, sizeof(states), cb_error,
-			buf_msg, buf_size_msg);
-	(*value) = states;
-#else
-	int result = 0;
-#endif
-	return result;
+	uint8_t states_a = 0x00;
+	uint8_t states_b = 0x00;
+	mcp23017_data* dev_data = dev->dev_data;
+
+	if (dev_data->io_state != MCP23017_READ)
+	{
+		mcp23017_configure_io(bus, dev, dev_data, MCP23017_READ, cb_error,
+				buf_msg, buf_size_msg);
+	}
+	if (MCP23017_READ == dev_data->io_state)
+	{
+		if (i2c_linux_read_byte_data(bus, dev, 0x12 /* GPIOA */, &states_a,
+				cb_error, buf_msg, buf_size_msg) == 0)
+		{
+			if (i2c_linux_read_byte_data(bus, dev, 0x13 /* GPIOB */, &states_b,
+					cb_error, buf_msg, buf_size_msg) == 0)
+			{
+				(*value) = 0x00;
+				(*value) |= states_a;
+				(*value) |= (states_b << 8);
+				return 1;
+			}
+		}
+	}
+	else
+	{
+		cb_error("Could not configure givem MCP23017 in read mode", buf_msg,
+				buf_size_msg);
+	}
+	return 0;
 }
 
 dev_drv* get_mcp23017_drv()

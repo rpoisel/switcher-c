@@ -10,6 +10,7 @@
 #include <sys/file.h>
 #include <errno.h>
 #include <asm-generic/errno.h>
+#include <io_i2c_linux.h>
 #include <libgen.h>
 
 /* included libraries */
@@ -18,7 +19,6 @@
 #include "parse_config.h"
 #include "http.h"
 #include "io.h"
-#include "io_i2c.h"
 
 #define MAX_PATH_LEN 255
 #define DEFAULT_CONFIG_PATH "config/io_ext.ini"

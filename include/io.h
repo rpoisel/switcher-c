@@ -8,7 +8,7 @@
 #define MAX_BUSSES 8
 #define MAX_IO_DEVICES 128
 
-/* f.g. /i2c-2 */
+/* e.g. /i2c-2 */
 #define MAX_PARAM_LEN 32
 
 typedef enum io_cmd
@@ -25,19 +25,16 @@ typedef struct dev_drv
 {
 	uint32_t (*init)(io_bus* bus, io_dev* dev);
 	int (*read)(io_bus* bus, io_dev* dev, value_t* value,
-				int (*cb_error)(char* error_msg, char* buf, int buf_size),
-				char* buf_msg, int buf_size_msg);
+			int (*cb_error)(char* error_msg, char* buf, int buf_size),
+			char* buf_msg, int buf_size_msg);
 	int (*write)(io_bus* bus, io_dev* dev, const value_t* value,
-				int (*cb_error)(char* error_msg, char* buf, int buf_size),
-				char* buf_msg, int buf_size_msg);
+			int (*cb_error)(char* error_msg, char* buf, int buf_size),
+			char* buf_msg, int buf_size_msg);
 	uint32_t (*deinit)(io_bus* bus, io_dev* dev);
 } dev_drv;
 
 typedef struct io_dev
 {
-#if 0
-	uint8_t address;
-#endif
 	dev_drv* drv_handle;
 	void* dev_bus_data; /* device specific for bus */
 	void* dev_data; /* device specific */
@@ -50,14 +47,6 @@ typedef struct bus_drv_
 	void (*discard_bus_data)(void* bus_data);
 	void (*discard_bus_dev_data)(void* bus_dev_data);
 	int (*open)(io_bus* bus);
-	int (*read)(io_bus* bus, io_dev* dev,
-		void* buf, size_t buf_size,
-		int (*cb_error)(char* error_msg, char* buf, int buf_size),
-		char* buf_msg, int buf_size_msg);
-	int (*write)(io_bus* bus, io_dev* dev,
-		void* buf, size_t buf_size,
-		int (*cb_error)(char* error_msg, char* buf, int buf_size),
-		char* buf_msg, int buf_size_msg);
 	int (*close)(io_bus* bus);
 } bus_drv;
 
@@ -68,11 +57,6 @@ typedef struct io_bus
 {
 	idx_t num_devices;
 	io_dev devices[MAX_IO_DEVICES];
-#if 0
-	bus_type type;
-	char param_0[MAX_PARAM_LEN];
-	int fh;
-#endif
 	bus_drv* drv_handle;
 	void* bus_data; /* bus specific */
 } io_bus;
@@ -88,7 +72,7 @@ typedef struct io_data
 	idx_t idx_bus;
 	idx_t idx_dev;
 	idx_t idx_sub_dev;
-	value_t value; /* TODO typedef type of value */
+	value_t value;
 } io_data;
 
 #define INIT_IO_DATA(p) \

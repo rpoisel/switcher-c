@@ -9,7 +9,7 @@
 #include <trace.h>
 #include <parse_config.h>
 #include <io.h>
-#include <io_i2c.h>
+#include <io_i2c_linux.h>
 #include <pcf8574.h>
 #include <mcp23017.h>
 
@@ -69,7 +69,7 @@ static int process_entries(io_bus* current_bus, io_dev* current_dev,
 	{
 		if (strncmp(value, INI_BUS_TYPE_I2C, MAX_PARAM_LEN) == 0)
 		{
-			current_bus->drv_handle = get_i2c_drv();
+			current_bus->drv_handle = get_i2c_linux_drv();
 		}
 	}
 	else if (strncmp(name, INI_DEV_DRV, MAX_INI_ENTRY_LEN) == 0)
